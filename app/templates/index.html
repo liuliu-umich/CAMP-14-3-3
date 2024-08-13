@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1433 Predictor</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+        form {
+            display: inline-block;
+        }
+        input[type="text"] {
+            width: 300px; /* Adjust the width as needed */
+            padding: 8px;
+            font-size: 16px;
+        }
+        input[type="number"] {
+            padding: 8px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <h1>1433 Predictor</h1>
+        <form method="POST" action="/">
+            <label for="number">Enter a phosphorylation site:</label><br>
+            <input type="number" id="number" name="number" required><br><br>
+
+            <label for="text">Enter amino acid sequence:</label><br>
+            <input type="text" id="text" name="text" required><br><br>
+
+            <input type="submit" value="Submit">
+        </form>
+    </div>
+</body>
+</html>
