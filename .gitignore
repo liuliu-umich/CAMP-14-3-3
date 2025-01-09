@@ -1,4 +1,5 @@
 # Project specific files
+tmp/
 data/
 .ipynb_checkpoints/
 
