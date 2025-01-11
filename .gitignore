@@ -1,6 +1,6 @@
 # Project specific files
-tmp/
-data/
+/tmp/
+/data/
 .ipynb_checkpoints/
 
 # Virtualenv
