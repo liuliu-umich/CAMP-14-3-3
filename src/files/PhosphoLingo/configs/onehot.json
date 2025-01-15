@@ -1,0 +1,20 @@
+{
+ "batch_norm": false,
+ "batch_size": 16,
+ "conv_channels": 325,
+ "conv_depth": 2,
+ "conv_width": 15,
+ "dropout": 0.4,
+ "final_fc_neurons": 350,
+ "freeze_representation": true,
+ "learning_rate": 0.0001,
+ "warm_up_epochs": 1.5,
+ "max_pool_size": 2,
+ "pos_weight": 1,
+ "receptive_field": 195,
+ "representation": "onehot",
+ "test_fold": -1,
+ "test_set": "default",
+ "training_set": "Scop3P/ST/PF",
+ "save_model": false
+}
