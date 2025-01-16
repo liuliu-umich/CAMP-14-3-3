@@ -2,7 +2,7 @@ from math import floor
 import torch
 import numpy as np
 from Bio import SeqIO
-from .input_tokenizers import TokenAlphabet
+from input_tokenizers import TokenAlphabet
 from typing import Any
 
 # Default fragment length used throughout the publication

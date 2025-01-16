@@ -1,8 +1,8 @@
-from . import input_reader as ir
+import input_reader as ir
 import torch.nn
 from torch.utils.data.dataloader import DataLoader
-from .lightning_module import LightningModule
-from . import utils
+from lightning_module import LightningModule
+import utils
 
 def run_predict(model_loc: str, dataset_fasta: str, output_file: str) -> None:
     """
@@ -20,7 +20,7 @@ def run_predict(model_loc: str, dataset_fasta: str, output_file: str) -> None:
     output_file : str
         The output csv file to which predictions are written
     """
-    model_d = torch.load(model_loc, map_location=torch.device('cpu'))
+    model_d = torch.load(model_loc, map_location ='cpu')
     config = model_d['hyper_parameters']['config']
     model = LightningModule(config, 0, model_d['hyper_parameters']['tokenizer'])
     model.load_state_dict(model_d['state_dict'])
