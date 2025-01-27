@@ -2,6 +2,7 @@
 /tmp/
 /data/
 .ipynb_checkpoints/
+/temp_dir
 
 # Virtualenv
 venv/

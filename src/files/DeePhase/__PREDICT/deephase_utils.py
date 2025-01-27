@@ -4,6 +4,7 @@ import pickle
 import math
 import tempfile
 import subprocess
+import os
 
 SEED = 42
 np.random.seed(SEED)
@@ -50,10 +51,22 @@ def Shannon_entropy(seq):
 def extract_LCR(seq):
     # tmp_LCR = tempfile.NamedTemporaryFile()  
     # with open(tmp_LCR.name, 'w') as f_LCR:
+    # Get the current working directory
+    try:
+        current_directory = os.getcwd()
+        print("Current Working Directory:", current_directory)
+    except PermissionError as e:
+        print("PermissionError:", e)
 
-    tmp_LCR = tempfile.NamedTemporaryFile()
-    with open(tmp_LCR.name, 'w') as f_LCR:   
-         f_LCR.write('>1\n' + str(seq))
+    temp_dir="./temp_dir"
+    if not os.path.exists(temp_dir):
+        os.makedirs(temp_dir, exist_ok=True)
+
+    tmp_LCR = tempfile.NamedTemporaryFile(dir=temp_dir, delete=False, delete_on_close=False)
+    print(tmp_LCR.name)
+
+    with tmp_LCR as f_LCR:  
+        f_LCR.write('>1\n' + str(seq))
     tmp_LCR.seek(0)
     
     out = subprocess.Popen(['segmasker', '-in', str(tmp_LCR.name)], 
@@ -77,9 +90,16 @@ def extract_LCR(seq):
 
 
 def extract_IDR(seq):
-    tmp_IDR = tempfile.NamedTemporaryFile()  
-    with open(tmp_IDR.name, 'w') as f_IDR:
-         f_IDR.write('>1\n' + str(seq))
+    temp_dir="./temp_dir"
+    if not os.path.exists(temp_dir):
+        os.makedirs(temp_dir, exist_ok=True)
+
+
+    tmp_IDR = tempfile.NamedTemporaryFile(dir=temp_dir, delete=False, delete_on_close=False)
+    print(tmp_IDR.name)
+
+    with tmp_IDR as f_IDR:  
+        f_IDR.write('>1\n' + str(seq))
     tmp_IDR.seek(0)
     
     out = subprocess.Popen(['python', 'tools/iupred2a.py', str(tmp_IDR.name), 'long'], 
