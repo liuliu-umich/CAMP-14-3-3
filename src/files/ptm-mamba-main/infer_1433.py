@@ -136,7 +136,7 @@ if __name__ == "__main__":
         
         # Add residue embedding dimensions as columns
         for dim in range(residue_embedding.size(0)):
-            row[f"residue_embedding_{dim}"] = residue_embedding[dim].item()
+            row[f"ptmmamba_residue_embedding_position_{dim}"] = residue_embedding[dim].item()
         
         # Add protein embedding dimensions as columns
         for dim in range(protein_embedding.size(0)):
