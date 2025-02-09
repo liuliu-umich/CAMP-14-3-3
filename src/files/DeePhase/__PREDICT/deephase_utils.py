@@ -4,7 +4,6 @@ import pickle
 import math
 import tempfile
 import subprocess
-import os
 
 SEED = 42
 np.random.seed(SEED)
@@ -49,24 +48,9 @@ def Shannon_entropy(seq):
 
 
 def extract_LCR(seq):
-    # tmp_LCR = tempfile.NamedTemporaryFile()  
-    # with open(tmp_LCR.name, 'w') as f_LCR:
-    # Get the current working directory
-    try:
-        current_directory = os.getcwd()
-        print("Current Working Directory:", current_directory)
-    except PermissionError as e:
-        print("PermissionError:", e)
-
-    temp_dir="./temp_dir"
-    if not os.path.exists(temp_dir):
-        os.makedirs(temp_dir, exist_ok=True)
-
-    tmp_LCR = tempfile.NamedTemporaryFile(dir=temp_dir, delete=False, delete_on_close=False)
-    print(tmp_LCR.name)
-
-    with tmp_LCR as f_LCR:  
-        f_LCR.write('>1\n' + str(seq))
+    tmp_LCR = tempfile.NamedTemporaryFile()  
+    with open(tmp_LCR.name, 'w') as f_LCR:
+         f_LCR.write('>1\n' + str(seq))
     tmp_LCR.seek(0)
     
     out = subprocess.Popen(['segmasker', '-in', str(tmp_LCR.name)], 
@@ -90,16 +74,9 @@ def extract_LCR(seq):
 
 
 def extract_IDR(seq):
-    temp_dir="./temp_dir"
-    if not os.path.exists(temp_dir):
-        os.makedirs(temp_dir, exist_ok=True)
-
-
-    tmp_IDR = tempfile.NamedTemporaryFile(dir=temp_dir, delete=False, delete_on_close=False)
-    print(tmp_IDR.name)
-
-    with tmp_IDR as f_IDR:  
-        f_IDR.write('>1\n' + str(seq))
+    tmp_IDR = tempfile.NamedTemporaryFile()  
+    with open(tmp_IDR.name, 'w') as f_IDR:
+         f_IDR.write('>1\n' + str(seq))
     tmp_IDR.seek(0)
     
     out = subprocess.Popen(['python', 'tools/iupred2a.py', str(tmp_IDR.name), 'long'], 
@@ -406,9 +383,10 @@ def DeePhase(df_of_sequences):
     data_phys = data_interm[phys_feature_cols]
     data_info = data_interm[info_cols]
     data_phys = pd.concat([data_phys, data_interm[info_cols]], axis = 1)
-    data_phys_sel = data_phys[['Hydrophobicity', 'Shannon_entropy', 'LCR_frac', 'IDR_frac',
+    data_phys_sel = data_phys[{'Hydrophobicity', 'Shannon_entropy', 'LCR_frac', 'IDR_frac',
              #'Polar_frac',
-             'Arom_frac', 'Cation_frac', 'sequence_final']]
+             'Arom_frac', 'Cation_frac', 'sequence_final'
+             }]
     data_phys_sel = data_phys_sel.reindex(sorted(data_phys_sel.columns), axis=1)
 
     data_interm['phys_multi'] = predict_multiclass('phys_multi', data_phys_sel)['prediction_phys_multi']
