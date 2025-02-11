@@ -112,5 +112,11 @@ if __name__ == "__main__":
         dataframe.to_csv(output_csv_file, index=False)
 
         print(f"Processed results saved to {output_csv_file}")
+
+        # Wait until the file is confirmed to exist
+        while True:
+            if os.path.exists(output_csv_file):
+                print(f"File confirmed: {output_csv_file}")
+                break
         
     main()

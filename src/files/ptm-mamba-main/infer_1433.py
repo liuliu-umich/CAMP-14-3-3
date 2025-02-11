@@ -6,6 +6,7 @@ from protein_lm.modeling.scripts.train import compute_esm_embedding, load_ckpt, 
 from protein_lm.tokenizer.tokenizer import PTMTokenizer
 from torch.nn.utils.rnn import pad_sequence
 import pandas as pd
+import os
 
 Output = namedtuple("output", ["logits", "hidden_states"])
 
@@ -149,5 +150,9 @@ if __name__ == "__main__":
     df.to_csv(filename, index=False)
     print(f"Embeddings have been saved to {filename}")
     
-    
+    # Wait until the file is confirmed to exist
+    while True:
+        if os.path.exists(filename):
+            print(f"File confirmed: {filename}")
+            break
     
