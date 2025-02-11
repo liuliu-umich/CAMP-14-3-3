@@ -8,9 +8,8 @@ WORKDIR /app
 # The dot (.) represents the current directory on the host
 COPY . /app
 
+# Install ncbi-blast+
+RUN apt-get update && apt-get install -y ncbi-blast+ && apt-get clean
+
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
-
-# # Run the application
-# # This assumes your application is started with a command like `python main.py`
-# CMD ["python", "main.py"]
