@@ -393,4 +393,4 @@ def DeePhase(df_of_sequences):
     data_interm['w2v_multi'] = predict_multiclass('w2v_multi', data_w2v)['prediction_w2v_multi']
     data_interm['DeePhase'] = 0.5*(data_interm['phys_multi']  + data_interm['w2v_multi'] )
 
-    return  str('DeePhase score: ') + str(round(data_interm['w2v_multi'].item(), 3))
+    return  round(data_interm['phys_multi'].item(), 3), round(data_interm['w2v_multi'].item(), 3), round(data_interm['DeePhase'].item(), 3)
