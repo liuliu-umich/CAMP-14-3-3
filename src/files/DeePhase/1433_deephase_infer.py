@@ -79,7 +79,7 @@ if __name__ == "__main__":
         deephase_result = DeePhase(df)
         
         # Extract the score from the result (assuming it's the last element after splitting)
-        score_str = deephase_result.split()[-1]
+        # score_str = deephase_result.split()[-1]
         
         # # Create a new DataFrame with the sequence and the score
         # new_df = pd.DataFrame({
@@ -92,7 +92,7 @@ if __name__ == "__main__":
         # print(score_str)
         
         # Return the new DataFrame
-        return float(score_str)
+        return deephase_result
 
     def main():
 
