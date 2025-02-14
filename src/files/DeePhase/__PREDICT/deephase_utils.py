@@ -269,7 +269,7 @@ class ProtVec(word2vec.Word2Vec):
 def load_protvec(model_fname):
     return word2vec.Word2Vec.load(model_fname)
 
-pv = load_protvec('__PREDICT/tools/Embeddings/swissprot_size200_window25.model')
+pv = load_protvec('src/files/DeePhase/__PREDICT/tools/Embeddings/swissprot_size200_window25.model')
 
 
 
@@ -358,7 +358,7 @@ def create_features(df):
 
     
 def predict_multiclass(model_name, df_predict_on):
-    model = pickle.load(open('__PREDICT/tools/Models/' + str(model_name) + '.sav', 'rb'))
+    model = pickle.load(open('src/files/DeePhase/__PREDICT/tools/Models/' + str(model_name) + '.sav', 'rb'))
     trial = df_predict_on.drop(['sequence_final'], axis=1).to_numpy()
     df_predictions =  df_predict_on.copy()
     df_predictions['prediction'] = model.predict_proba(trial)[:,0] + 0.5* model.predict_proba(trial)[:,1]
@@ -383,10 +383,9 @@ def DeePhase(df_of_sequences):
     data_phys = data_interm[phys_feature_cols]
     data_info = data_interm[info_cols]
     data_phys = pd.concat([data_phys, data_interm[info_cols]], axis = 1)
-    data_phys_sel = data_phys[{'Hydrophobicity', 'Shannon_entropy', 'LCR_frac', 'IDR_frac',
+    data_phys_sel = data_phys[['Hydrophobicity', 'Shannon_entropy', 'LCR_frac', 'IDR_frac',
              #'Polar_frac',
-             'Arom_frac', 'Cation_frac', 'sequence_final'
-             }]
+             'Arom_frac', 'Cation_frac', 'sequence_final']]
     data_phys_sel = data_phys_sel.reindex(sorted(data_phys_sel.columns), axis=1)
 
     data_interm['phys_multi'] = predict_multiclass('phys_multi', data_phys_sel)['prediction_phys_multi']
