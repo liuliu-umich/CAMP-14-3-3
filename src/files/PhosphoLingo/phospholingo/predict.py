@@ -3,7 +3,6 @@ import torch.nn
 from torch.utils.data.dataloader import DataLoader
 from lightning_module import LightningModule
 import utils
-import gc
 
 def run_predict(model_loc: str, dataset_fasta: str, output_file: str) -> None:
     """
@@ -44,7 +43,3 @@ def run_predict(model_loc: str, dataset_fasta: str, output_file: str) -> None:
 
                 for id, pos, prob in zip(prot_ids, site_positions, predicted_probs):
                     print(','.join([id, str(int(pos) + 1), '{:.3f}'.format(float(prob))]), file=write_to)
-                    
-    
-    del model_d
-    gc.collect()
