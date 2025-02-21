@@ -4,6 +4,7 @@ import pickle
 import math
 import tempfile
 import subprocess
+import os
 
 SEED = 42
 np.random.seed(SEED)
@@ -48,15 +49,33 @@ def Shannon_entropy(seq):
 
 
 def extract_LCR(seq):
-    tmp_LCR = tempfile.NamedTemporaryFile()  
-    with open(tmp_LCR.name, 'w') as f_LCR:
-         f_LCR.write('>1\n' + str(seq))
-    tmp_LCR.seek(0)
+    # tmp_LCR = tempfile.NamedTemporaryFile()  
+    # with open(tmp_LCR.name, 'w') as f_LCR:
+    #      f_LCR.write('>1\n' + str(seq))
+    # tmp_LCR.seek(0)
     
-    out = subprocess.Popen(['segmasker', '-in', str(tmp_LCR.name)], 
-           stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    stdout_LCR, stderr_LCR = out.communicate() 
+    # out = subprocess.Popen(['segmasker', '-in', str(tmp_LCR.name)], 
+    #        stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    # stdout_LCR, stderr_LCR = out.communicate() 
+    # stdout_LCR = stdout_LCR.split()[1:]
+
+    # Define a unique temporary file name in the current directory
+    tmp_filename = 'tmp_LCR_file.fasta'
+
+    # Write the sequence to the temporary file
+    with open(tmp_filename, 'w') as f_LCR:
+        f_LCR.write('>1\n' + str(seq))
+
+    # Run the subprocess using the temporary file
+    out = subprocess.Popen(['segmasker', '-in', tmp_filename], 
+                        stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    stdout_LCR, stderr_LCR = out.communicate()
+
+    # Process the output
     stdout_LCR = stdout_LCR.split()[1:]
+
+    # Remove the temporary file after processing
+    os.remove(tmp_filename)
     
     LCR_start_values = []; LCR_end_values = []    
     for i in range(0, int(len(stdout_LCR)/3)):
@@ -74,15 +93,34 @@ def extract_LCR(seq):
 
 
 def extract_IDR(seq):
-    tmp_IDR = tempfile.NamedTemporaryFile()  
-    with open(tmp_IDR.name, 'w') as f_IDR:
-         f_IDR.write('>1\n' + str(seq))
-    tmp_IDR.seek(0)
+    # tmp_IDR = tempfile.NamedTemporaryFile()  
+    # with open(tmp_IDR.name, 'w') as f_IDR:
+    #      f_IDR.write('>1\n' + str(seq))
+    # tmp_IDR.seek(0)
     
-    out = subprocess.Popen(['python', 'tools/iupred2a.py', str(tmp_IDR.name), 'long'], 
-           stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    stdout_IDR, stderr_IDR = out.communicate()
+    # out = subprocess.Popen(['python', 'tools/iupred2a.py', str(tmp_IDR.name), 'long'], 
+    #        stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    # stdout_IDR, stderr_IDR = out.communicate()
+    # stdout_IDR = stdout_IDR.split()[40:]
+
+
+    # Define a unique temporary file name in the current directory
+    tmp_filename = 'tmp_IDR_file.fasta'
+
+    # Write the sequence to the temporary file
+    with open(tmp_filename, 'w') as f_IDR:
+        f_IDR.write('>1\n' + str(seq))
+
+    # Run the subprocess using the temporary file
+    out = subprocess.Popen(['python', 'tools/iupred2a.py', tmp_filename, 'long'], 
+                        stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    stdout_IDR, _ = out.communicate()
+
+    # Process the output
     stdout_IDR = stdout_IDR.split()[40:]
+
+    # Remove the temporary file after processing
+    os.remove(tmp_filename)
     
     IDR_prob = []
     for i in range(0, int(len(stdout_IDR)/3)):
