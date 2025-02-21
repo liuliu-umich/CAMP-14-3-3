@@ -23,7 +23,7 @@ from Bio import SeqIO
 
 
 
-def extract_idr_achor_score(seq, site):
+def extract_idr_achor_score(sequence, site):
     iupred_type = "long"
     # Predict disorder using iupred2a_lib
     iupred_scores = iupred2a_lib.iupred(sequence, iupred_type)[0]
@@ -263,10 +263,6 @@ def extract_phospholingo_score(sequence, site, model_loc):
     return filtered_df
 
 
-
-
-
-
 def extract_esm_embedding(seq, site, tokenizer, model):
     """
     Extract protein-level and site-specific embeddings using ESM-2.
@@ -281,6 +277,11 @@ def extract_esm_embedding(seq, site, tokenizer, model):
         protein_embedding_df (pd.DataFrame): Protein-level embedding.
         site_embedding_df (pd.DataFrame): Site-specific embedding.
     """
+
+    # Move model to GPU if available
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model.to(device)
+    
     # Tokenize the sequence
     inputs = tokenizer(seq, return_tensors="pt")
     inputs = {k: v.to(device) for k, v in inputs.items()}  # Move inputs to GPU
@@ -315,89 +316,91 @@ def extract_esm_embedding(seq, site, tokenizer, model):
 
 
 
-import os
-os.environ['PATH'] = "/Users/newuser/ncbi-blast-2.16.0+/bin:" + os.environ['PATH']
-os.environ['PATH'] = "C:/Program Files/NCBI/blast-2.16.0+/bin" + ";" + os.environ['PATH']
+# import os
+# os.environ['PATH'] = "/Users/newuser/ncbi-blast-2.16.0+/bin:" + os.environ['PATH']
+# os.environ['PATH'] = "C:/Program Files/NCBI/blast-2.16.0+/bin" + ";" + os.environ['PATH']
 
 
-import numpy as np
-from gensim.models import word2vec
+# import numpy as np
+# from gensim.models import word2vec
 
-class ProtVec(word2vec.Word2Vec):
+# class ProtVec(word2vec.Word2Vec):
 
-    def __init__(self, fasta_fname=None, corpus=None, n=3, size=100, corpus_fname="corpus.txt",  sg=1, window=25, min_count=1, workers=20):
-        """
-        Either fname or corpus is required.
-        fasta_fname: fasta file for corpus
-        corpus: corpus object implemented by gensim
-        n: n of n-gram
-        corpus_fname: corpus file path
-        min_count: least appearance count in corpus. if the n-gram appear k times which is below min_count, the model does not remember the n-gram
-        """
+#     def __init__(self, fasta_fname=None, corpus=None, n=3, size=100, corpus_fname="corpus.txt",  sg=1, window=25, min_count=1, workers=20):
+#         """
+#         Either fname or corpus is required.
+#         fasta_fname: fasta file for corpus
+#         corpus: corpus object implemented by gensim
+#         n: n of n-gram
+#         corpus_fname: corpus file path
+#         min_count: least appearance count in corpus. if the n-gram appear k times which is below min_count, the model does not remember the n-gram
+#         """
 
-        self.n = n
-        self.size = size
-        self.fasta_fname = fasta_fname
+#         self.n = n
+#         self.size = size
+#         self.fasta_fname = fasta_fname
 
-        if corpus is None and fasta_fname is None:
-            raise Exception("Either fasta_fname or corpus is needed!")
+#         if corpus is None and fasta_fname is None:
+#             raise Exception("Either fasta_fname or corpus is needed!")
 
-        if fasta_fname is not None:
-            print('Generate Corpus file from fasta file...')
-            generate_corpusfile(fasta_fname, n, corpus_fname)
-            corpus = word2vec.Text8Corpus(corpus_fname)
+#         if fasta_fname is not None:
+#             print('Generate Corpus file from fasta file...')
+#             generate_corpusfile(fasta_fname, n, corpus_fname)
+#             corpus = word2vec.Text8Corpus(corpus_fname)
 
-        word2vec.Word2Vec.__init__(self, corpus, size=size, sg=sg, window=window, min_count=min_count, workers=workers)
+#         word2vec.Word2Vec.__init__(self, corpus, size=size, sg=sg, window=window, min_count=min_count, workers=workers)
 
-    def to_vecs(self, seq):
-        """
-        convert sequence to three n-length vectors
-        e.g. 'AGAMQSASM' => [ array([  ... * 100 ], array([  ... * 100 ], array([  ... * 100 ] ]
-        """
-        ngram_patterns = split_ngrams(seq, self.n)
+#     def to_vecs(self, seq):
+#         """
+#         convert sequence to three n-length vectors
+#         e.g. 'AGAMQSASM' => [ array([  ... * 100 ], array([  ... * 100 ], array([  ... * 100 ] ]
+#         """
+#         ngram_patterns = split_ngrams(seq, self.n)
 
-        protvecs = []
-        for ngrams in ngram_patterns:
-            ngram_vecs = []
-            for ngram in ngrams:
-                try:
-                    ngram_vecs.append(self.wv[ngram])
-                except:
-                    raise Exception("Model has never trained this n-gram: " + ngram)
-            protvecs.append(sum(ngram_vecs))
-        return protvecs
+#         protvecs = []
+#         for ngrams in ngram_patterns:
+#             ngram_vecs = []
+#             for ngram in ngrams:
+#                 try:
+#                     ngram_vecs.append(self.wv[ngram])
+#                 except:
+#                     raise Exception("Model has never trained this n-gram: " + ngram)
+#             protvecs.append(sum(ngram_vecs))
+#         return protvecs
     
     
-    def get_vector(self, seq):
-        """
-        sum and normalize the three n-length vectors returned by self.to_vecs
-        """
-        #return normalize(sum(self.to_vecs(seq)))
-        return sum(self.to_vecs(seq))
+#     def get_vector(self, seq):
+#         """
+#         sum and normalize the three n-length vectors returned by self.to_vecs
+#         """
+#         #return normalize(sum(self.to_vecs(seq)))
+#         return sum(self.to_vecs(seq))
 
     
-def load_protvec(model_fname):
-    return word2vec.Word2Vec.load(model_fname)
+# def load_protvec(model_fname):
+#     return word2vec.Word2Vec.load(model_fname)
 
-pv = load_protvec('src/files/DeePhase/__PREDICT/tools/Embeddings/swissprot_size200_window25.model')
+# pv = load_protvec('src/files/DeePhase/__PREDICT/tools/Embeddings/swissprot_size200_window25.model')
 
-SEED = 42
-np.random.seed(SEED)
+# SEED = 42
+# np.random.seed(SEED)
 
-from src.files.DeePhase.__PREDICT.deephase_utils import *
+# from src.files.DeePhase.__PREDICT.deephase_utils import *
 
-def extract_seq_deephase_score(seq):
-    # # Create a DataFrame with the input sequence
-    df = pd.DataFrame({'sequence_final': [seq]})
+# def extract_seq_deephase_score(seq):
+#     # # Create a DataFrame with the input sequence
+#     df = pd.DataFrame({'sequence_final': [seq]})
     
-    # Call the DeePhase function (assuming it returns a string)
-    deephase_result = DeePhase(df)
+#     # Call the DeePhase function (assuming it returns a string)
+#     deephase_result = DeePhase(df)
 
-    df_deephase_score = pd.DataFrame([deephase_result], columns=['deephase_phys_multi', 'deephase_w2v_multi', 'deephase_score'])
+#     df_deephase_score = pd.DataFrame([deephase_result], columns=['deephase_phys_multi', 'deephase_w2v_multi', 'deephase_score'])
 
-    df_deephase_score = df_deephase_score.astype(float)
+#     df_deephase_score = df_deephase_score.astype(float)
 
-    return df_deephase_score
+#     return df_deephase_score
+
+
 
 
 # mac add path
