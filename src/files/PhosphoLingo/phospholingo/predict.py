@@ -1,8 +1,17 @@
 import input_reader as ir
+# from . import input_reader as ir
+
 import torch.nn
 from torch.utils.data.dataloader import DataLoader
+
 from lightning_module import LightningModule
+# from .lightning_module import LightningModule
+
 import utils
+# from . import utils
+# from . import input_tokenizers
+
+
 
 def run_predict(model_loc: str, dataset_fasta: str, output_file: str) -> None:
     """

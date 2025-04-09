@@ -3,10 +3,18 @@ import pytorch_lightning as pl
 from torch import nn
 from torch.optim import AdamW
 from torchmetrics import Metric, AUROC, AveragePrecision
+
 from utils import BinnedPrecisionAtFixedRecall
+# from .utils import BinnedPrecisionAtFixedRecall
+
 from typing import Any
+
 from input_tokenizers import TokenAlphabet
+# from .input_tokenizers import TokenAlphabet
+
 import network_architectures
+# from . import network_architectures
+
 from torch.optim.lr_scheduler import LinearLR
 
 # PyTorch-Lightning Module class; takes care of training, batch organization, metrics, logging, evaluation

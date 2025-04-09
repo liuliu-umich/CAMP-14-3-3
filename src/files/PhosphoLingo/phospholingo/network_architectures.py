@@ -1,7 +1,10 @@
 import torch
 import esm
 from typing import Any
+
 from input_tokenizers import TokenAlphabet, tokenizers
+# from .input_tokenizers import TokenAlphabet, tokenizers
+
 from torch import nn
 from transformers import T5EncoderModel
 from sequence_models.pretrained import load_model_and_alphabet

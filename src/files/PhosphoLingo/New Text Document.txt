@@ -1,1 +1,0 @@
-python phospholingo predict H:\PhosphoLingo_ST_new.ckpt test.fasta test.csv
