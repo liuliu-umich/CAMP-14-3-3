@@ -8,6 +8,7 @@
 /results_chuck/
 /anaconda_projects/
 /.virtual_documents/
+/results/
 
 # Virtualenv
 venv/
