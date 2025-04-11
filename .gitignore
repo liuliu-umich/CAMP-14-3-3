@@ -5,6 +5,7 @@
 /temp_dir
 /src/files/ptm-mamba-main/*
 !/src/files/ptm-mamba-main/infer_1433.py
+/results_chuck
 
 # Virtualenv
 venv/
