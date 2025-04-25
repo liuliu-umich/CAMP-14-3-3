@@ -1,1 +1,1 @@
-iupred_score, fK, nuSVR, fR, deephase_score, onehot_0_s, SCD, onehot_1_P, deephase_w2v_multi, mean_lambda, NCPR, onehot_-4_R, onehot_0_t, onehot_2_P, phospho_score, FCR, onehot_-3_R, SconfSVR/N (kB), SHD, onehot_-2_S, kappa, deephase_phys_multi, onehot_-2_R
+onehot_1_P, onehot_-3_R, onehot_2_P, NCPR, fK, nuSVR, onehot_-2_R, phospho_score, SCD, iupred_score, faro, deephase_w2v_multi, onehot_-3_E, kappa, onehot_-2_S, onehot_-4_R
