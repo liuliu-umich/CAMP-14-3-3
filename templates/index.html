@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sequence Analyzer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Sequence and Site Analysis</h1>
+    <form action="/predict" method="POST">
+        <label for="sequence">Sequence:</label>
+        <textarea name="sequence" rows="4" cols="50" required></textarea>
+        
+        <label for="site">Site:</label>
+        <input type="text" name="site" required>
+        
+        <br>
+        <input type="submit" value="Analyze">
+    </form>
+</body>
+</html>

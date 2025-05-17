@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Results</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Analysis Results</h1>
+    <div class="input-section">
+        <p><strong>Input Sequence:</strong> {{ sequence }}</p>
+        <p><strong>Site:</strong> {{ site }}</p>
+    </div>
+    
+    <h2>Extracted Features:</h2>
+    <ul>
+    {% for feature in features %}
+        <li>Feature {{ loop.index }}: {{ feature }}</li>
+    {% endfor %}
+    </ul>
+    
+    <h2>Prediction:</h2>
+    <div class="prediction-section">
+        <p>Class: {{ prediction }}</p>
+        <p>Probability: {{ (probability.max() * 100)|round(2) }}%</p>
+    </div>
+    
+    <a href="/" class="back-link">Analyze Another</a>
+</body>
+</html>
