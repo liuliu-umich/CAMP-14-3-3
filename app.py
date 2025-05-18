@@ -3,29 +3,34 @@ import joblib
 from features import extract_features
 
 app = Flask(__name__)
-# model = joblib.load('model/model.pkl')
+predict_model = joblib.load('model/model.pkl')
 
 @app.route('/')
 def home():
     return render_template('index.html')
 
 @app.route('/predict', methods=['POST'])
-def predict():
+def predict_score():
     # Get both inputs from form
     sequence = request.form['sequence']
     site = request.form['site']
     
     # Feature extraction using both inputs
-    features = extract_features(sequence, site)  # Updated to accept site
+    prediction_features = extract_features(sequence, site)  # Updated to accept site
+    # check_non_numeric_values(prediction_features)
+    print(prediction_features)
     
     # Prediction
-    prediction = model.predict([features])[0]
-    probability = model.predict_proba([features])[0]
+    prediction = predict_model.predict(prediction_features)[0]
+    probability = predict_model.predict_proba(prediction_features)[0]
+
+    print(prediction, probability)
+
     
     return render_template('result.html',
                          sequence=sequence,
                          site=site,
-                         features=features,
+                         features=prediction_features,
                          prediction=prediction,
                          probability=probability)
     

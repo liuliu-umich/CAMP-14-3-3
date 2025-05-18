@@ -397,92 +397,92 @@ def extract_esm_embedding(seq, site, tokenizer, model):
     return protein_embedding_df, site_embedding_df
 
 
-import pandas as pd
+# import pandas as pd
 
-#DO NOT CHANGE ANYTHING IN THIS CELL. MOVE ON TO THE FOLLOWING ONE TO GET THE PREDICTION.
-import os
-os.environ['PATH'] = "/Users/newuser/ncbi-blast-2.16.0+/bin:" + os.environ['PATH']
-os.environ['PATH'] = "C:/Program Files/NCBI/blast-2.16.0+/bin" + ";" + os.environ['PATH']
+# #DO NOT CHANGE ANYTHING IN THIS CELL. MOVE ON TO THE FOLLOWING ONE TO GET THE PREDICTION.
+# import os
+# os.environ['PATH'] = "/Users/newuser/ncbi-blast-2.16.0+/bin:" + os.environ['PATH']
+# os.environ['PATH'] = "C:/Program Files/NCBI/blast-2.16.0+/bin" + ";" + os.environ['PATH']
 
 
-import numpy as np
-from gensim.models import word2vec
+# import numpy as np
+# from gensim.models import word2vec
 
-class ProtVec(word2vec.Word2Vec):
+# class ProtVec(word2vec.Word2Vec):
 
-    def __init__(self, fasta_fname=None, corpus=None, n=3, size=100, corpus_fname="corpus.txt",  sg=1, window=25, min_count=1, workers=20):
-        """
-        Either fname or corpus is required.
-        fasta_fname: fasta file for corpus
-        corpus: corpus object implemented by gensim
-        n: n of n-gram
-        corpus_fname: corpus file path
-        min_count: least appearance count in corpus. if the n-gram appear k times which is below min_count, the model does not remember the n-gram
-        """
+#     def __init__(self, fasta_fname=None, corpus=None, n=3, size=100, corpus_fname="corpus.txt",  sg=1, window=25, min_count=1, workers=20):
+#         """
+#         Either fname or corpus is required.
+#         fasta_fname: fasta file for corpus
+#         corpus: corpus object implemented by gensim
+#         n: n of n-gram
+#         corpus_fname: corpus file path
+#         min_count: least appearance count in corpus. if the n-gram appear k times which is below min_count, the model does not remember the n-gram
+#         """
 
-        self.n = n
-        self.size = size
-        self.fasta_fname = fasta_fname
+#         self.n = n
+#         self.size = size
+#         self.fasta_fname = fasta_fname
 
-        if corpus is None and fasta_fname is None:
-            raise Exception("Either fasta_fname or corpus is needed!")
+#         if corpus is None and fasta_fname is None:
+#             raise Exception("Either fasta_fname or corpus is needed!")
 
-        if fasta_fname is not None:
-            print('Generate Corpus file from fasta file...')
-            generate_corpusfile(fasta_fname, n, corpus_fname)
-            corpus = word2vec.Text8Corpus(corpus_fname)
+#         if fasta_fname is not None:
+#             print('Generate Corpus file from fasta file...')
+#             generate_corpusfile(fasta_fname, n, corpus_fname)
+#             corpus = word2vec.Text8Corpus(corpus_fname)
 
-        word2vec.Word2Vec.__init__(self, corpus, size=size, sg=sg, window=window, min_count=min_count, workers=workers)
+#         word2vec.Word2Vec.__init__(self, corpus, size=size, sg=sg, window=window, min_count=min_count, workers=workers)
 
-    def to_vecs(self, seq):
-        """
-        convert sequence to three n-length vectors
-        e.g. 'AGAMQSASM' => [ array([  ... * 100 ], array([  ... * 100 ], array([  ... * 100 ] ]
-        """
-        ngram_patterns = split_ngrams(seq, self.n)
+#     def to_vecs(self, seq):
+#         """
+#         convert sequence to three n-length vectors
+#         e.g. 'AGAMQSASM' => [ array([  ... * 100 ], array([  ... * 100 ], array([  ... * 100 ] ]
+#         """
+#         ngram_patterns = split_ngrams(seq, self.n)
 
-        protvecs = []
-        for ngrams in ngram_patterns:
-            ngram_vecs = []
-            for ngram in ngrams:
-                try:
-                    ngram_vecs.append(self.wv[ngram])
-                except:
-                    raise Exception("Model has never trained this n-gram: " + ngram)
-            protvecs.append(sum(ngram_vecs))
-        return protvecs
+#         protvecs = []
+#         for ngrams in ngram_patterns:
+#             ngram_vecs = []
+#             for ngram in ngrams:
+#                 try:
+#                     ngram_vecs.append(self.wv[ngram])
+#                 except:
+#                     raise Exception("Model has never trained this n-gram: " + ngram)
+#             protvecs.append(sum(ngram_vecs))
+#         return protvecs
     
     
-    def get_vector(self, seq):
-        """
-        sum and normalize the three n-length vectors returned by self.to_vecs
-        """
-        #return normalize(sum(self.to_vecs(seq)))
-        return sum(self.to_vecs(seq))
+#     def get_vector(self, seq):
+#         """
+#         sum and normalize the three n-length vectors returned by self.to_vecs
+#         """
+#         #return normalize(sum(self.to_vecs(seq)))
+#         return sum(self.to_vecs(seq))
 
     
-def load_protvec(model_fname):
-    return word2vec.Word2Vec.load(model_fname)
+# def load_protvec(model_fname):
+#     return word2vec.Word2Vec.load(model_fname)
 
-pv = load_protvec('src/files/DeePhase/__PREDICT/tools/Embeddings/swissprot_size200_window25.model')
+# pv = load_protvec('src/files/DeePhase/__PREDICT/tools/Embeddings/swissprot_size200_window25.model')
 
-SEED = 42
-np.random.seed(SEED)
+# SEED = 42
+# np.random.seed(SEED)
 
-from src.files.DeePhase.__PREDICT.deephase_utils import *
+# from src.files.DeePhase.__PREDICT.deephase_utils import *
 
-def extract_seq_deephase_score(seq):
-    # # Create a DataFrame with the input sequence
-    df = pd.DataFrame({'sequence_final': [seq]})
+# def extract_seq_deephase_score(seq):
+#     # # Create a DataFrame with the input sequence
+#     df = pd.DataFrame({'sequence_final': [seq]})
     
-    # Call the DeePhase function (assuming it returns a string)
-    deephase_result = DeePhase(df)
+#     # Call the DeePhase function (assuming it returns a string)
+#     deephase_result = DeePhase(df)
 
-    df_deephase_score = pd.DataFrame([deephase_result], columns=['deephase_phys_multi', 'deephase_w2v_multi', 'deephase_score'])
+#     df_deephase_score = pd.DataFrame([deephase_result], columns=['deephase_phys_multi', 'deephase_w2v_multi', 'deephase_score'])
 
-    df_deephase_score = df_deephase_score.astype(float)
+#     df_deephase_score = df_deephase_score.astype(float)
 
-    return df_deephase_score
+#     return df_deephase_score
 
 
 # need to run under docker enviroment
@@ -807,6 +807,7 @@ os.environ['PATH'] = "C:/Program Files/NCBI/blast-2.16.0+/bin" + ";" + os.enviro
 import numpy as np
 from gensim.models import word2vec
 
+
 class ProtVec(word2vec.Word2Vec):
 
     def __init__(self, fasta_fname=None, corpus=None, n=3, size=100, corpus_fname="corpus.txt",  sg=1, window=25, min_count=1, workers=20):
@@ -860,8 +861,16 @@ class ProtVec(word2vec.Word2Vec):
         return sum(self.to_vecs(seq))
 
     
+# def load_protvec(model_fname):
+#     return word2vec.Word2Vec.load(model_fname)
+
+# pv = load_protvec('src/files/DeePhase/__PREDICT/tools/Embeddings/swissprot_size200_window25.model')
+
+import __main__
+__main__.ProtVec = ProtVec  # Make ProtVec available in the __main__ context
+
 def load_protvec(model_fname):
-    return word2vec.Word2Vec.load(model_fname)
+    return ProtVec.load(model_fname)  # Use ProtVec's load method
 
 pv = load_protvec('src/files/DeePhase/__PREDICT/tools/Embeddings/swissprot_size200_window25.model')
 
@@ -977,7 +986,7 @@ def build_plm_features_df(sequence, site, tokenizer, model, phospholingo=True):
 
     phosphoprotein_embedding_df, phosphosite_embedding_df = extract_ptmmamba_embedding(wt_seq, site)
     # print("phosphoprotein_embedding_df, phosphosite_embedding_df:", phosphoprotein_embedding_df, phosphosite_embedding_df)
-
+    gc.collect()
     if phospholingo:
         phospholingo_score_df = extract_phospholingo_score([wt_seq], [site], model_loc)
         # print("phospholingo_score_df:", phospholingo_score_df)    
@@ -992,8 +1001,12 @@ def build_plm_features_df(sequence, site, tokenizer, model, phospholingo=True):
     return plm_features_df
 
 def extract_features(sequence, site):
-    protein_sequences = sequence
-    site = int(site)                
+    site = int(site)
+
+    # Create a new sequence with the letter at the specified site lowercased
+    if 0 <= site < len(sequence):
+        new_sequence = sequence[:site-1] + sequence[site-1].lower() + sequence[site:]
+        protein_sequences = new_sequence              
         
     # Process the new data
     bio_features_df = build_bio_features_df(protein_sequences, site)
@@ -1005,8 +1018,29 @@ def extract_features(sequence, site):
     print(plm_features_df)
 
     result_df = pd.concat([bio_features_df, plm_features_df], axis=1)
+    print(len(result_df))
+    
     optimal_features = ['esm_residue_embedding_482', 'esm_residue_embedding_197', 'esm_residue_embedding_844', 'onehot_1_L', 'esm_residue_embedding_715', 'esm_residue_embedding_1259', 'ptmmamba_residue_embedding_79', 'esm_residue_embedding_1074', 'iupred_score', 'esm_residue_embedding_53', 'onehot_1_P', 'onehot_-3_R', 'onehot_-1_H', 'onehot_1_R', 'esm_residue_embedding_327', 'phospho_score', 'esm_residue_embedding_1041', 'onehot_-1_K', 'onehot_-3_E', 'onehot_7_G', 'onehot_-4_R', 'esm_residue_embedding_394', 'ptmmamba_residue_embedding_408', 'onehot_2_P', 'esm_residue_embedding_546', 'onehot_-2_G', 'esm_residue_embedding_491', 'esm_residue_embedding_1215', 'onehot_-2_S', 'esm_residue_embedding_81', 'onehot_-5_R', 'onehot_3_D', 'esm_protein_embedding_68', 'nuSVR', 'esm_residue_embedding_356', 'onehot_-2_R', 'esm_residue_embedding_385', 'esm_residue_embedding_1171', 'deephase_w2v_multi', 'esm_residue_embedding_1242']
 
     result_df = result_df[optimal_features]
+
+    def extract_number(x):
+        try:
+            if isinstance(x, (int, float)):
+                return x
+            if isinstance(x, str) and x.startswith('[') and x.endswith(']'):
+                x = ast.literal_eval(x)
+            if isinstance(x, list) and len(x) == 1 and isinstance(x[0], (int, float)):
+                return x[0]
+        except:
+            pass
+        return x  # fallback if nothing works
+
+    for col in result_df.columns:
+        if result_df[col].dtype == 'object':
+            result_df[col] = result_df[col].apply(extract_number)
+
+    print(len(result_df))
+    print(result_df)
 
     return result_df
