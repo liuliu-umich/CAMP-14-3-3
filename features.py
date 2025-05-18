@@ -200,8 +200,17 @@ from pathlib import Path
 from typing import List, Optional
 
 # 1. Add PhosphoLingo to Python path
-phospholingo_dir = Path("src/files/PhosphoLingo/phosphoLingo").resolve()  # Update this path!
-sys.path.insert(0, str(phospholingo_dir))
+
+# Get the directory containing this script
+SCRIPT_DIR = Path(__file__).resolve().parent
+
+# 1. Add PhosphoLingo to Python path
+PHOSPHOLINGO_DIR = SCRIPT_DIR / "src/files/PhosphoLingo/phosphoLingo"  # Adjust relative path as needed
+sys.path.insert(0, str(PHOSPHOLINGO_DIR))
+
+
+# phospholingo_dir = Path("src/files/PhosphoLingo/phosphoLingo").resolve()  # Update this path!
+# sys.path.insert(0, str(phospholingo_dir))
 
 # 2. Import AFTER path adjustment
 import predict
@@ -287,8 +296,8 @@ def extract_phospholingo_score(sequences, sites, model_loc, sequence_ids = ["def
     modified_sequences = []
     valid_entries = []
     for seq_id, seq, site in zip(sequence_ids, sequences, sites):
-        modified = add_at_after_st(seq, site)
-        # print(modified)
+        modified = add_at_after_st(seq, site).upper()
+        print(modified)
         if modified:
             modified_sequences.append(modified)
             valid_entries.append((seq_id, seq, site))
@@ -1004,13 +1013,15 @@ def extract_features(sequence, site):
     site = int(site)
 
     # Create a new sequence with the letter at the specified site lowercased
-    if 0 <= site < len(sequence):
+    if 0 <= site-1 < len(sequence):
         new_sequence = sequence[:site-1] + sequence[site-1].lower() + sequence[site:]
         protein_sequences = new_sequence              
         
     # Process the new data
     bio_features_df = build_bio_features_df(protein_sequences, site)
     plm_features_df = build_plm_features_df(protein_sequences, site, tokenizer, model, phospholingo=True)
+    # plm_features_df = build_plm_features_df(protein_sequences, site, tokenizer, model, phospholingo=False)
+
     
     bio_features_df = bio_features_df.reset_index(drop=True)
     print(bio_features_df)
