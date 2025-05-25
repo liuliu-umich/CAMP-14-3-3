@@ -201,16 +201,16 @@ from typing import List, Optional
 
 # 1. Add PhosphoLingo to Python path
 
-# Get the directory containing this script
-SCRIPT_DIR = Path(__file__).resolve().parent
+# # Get the directory containing this script
+# SCRIPT_DIR = Path(__file__).resolve().parent
 
-# 1. Add PhosphoLingo to Python path
-PHOSPHOLINGO_DIR = SCRIPT_DIR / "src/files/PhosphoLingo/phosphoLingo"  # Adjust relative path as needed
-sys.path.insert(0, str(PHOSPHOLINGO_DIR))
+# # 1. Add PhosphoLingo to Python path
+# PHOSPHOLINGO_DIR = SCRIPT_DIR / "src/files/PhosphoLingo/phosphoLingo"  # Adjust relative path as needed
+# sys.path.insert(0, str(PHOSPHOLINGO_DIR))
 
 
-# phospholingo_dir = Path("src/files/PhosphoLingo/phosphoLingo").resolve()  # Update this path!
-# sys.path.insert(0, str(phospholingo_dir))
+phospholingo_dir = Path("src/files/PhosphoLingo/phosphoLingo").resolve()  # Update this path!
+sys.path.insert(0, str(phospholingo_dir))
 
 # 2. Import AFTER path adjustment
 import predict
@@ -970,7 +970,7 @@ def build_plm_features_df(sequence, site, tokenizer, model, phospholingo=True):
 
     # phospholingo model location
     # model_loc = "/Users/newuser/PhosphoLingo_ST_new.ckpt" 
-    model_loc = "H:/PhosphoLingo_ST_new.ckpt"
+    model_loc = r"H:\PhosphoLingo_ST_new.ckpt"
     
     # # Move model to GPU if available
     # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
