@@ -199,152 +199,229 @@ import pandas as pd
 from pathlib import Path
 from typing import List, Optional
 
-# 1. Add PhosphoLingo to Python path
 
-# # Get the directory containing this script
-# SCRIPT_DIR = Path(__file__).resolve().parent
+# phospholingo_dir = Path("src/files/PhosphoLingo/phosphoLingo").resolve()  # Update this path!
+# sys.path.insert(0, str(phospholingo_dir))
 
-# # 1. Add PhosphoLingo to Python path
-# PHOSPHOLINGO_DIR = SCRIPT_DIR / "src/files/PhosphoLingo/phosphoLingo"  # Adjust relative path as needed
-# sys.path.insert(0, str(PHOSPHOLINGO_DIR))
+# # 2. Import AFTER path adjustment
+# import predict
 
-
-phospholingo_dir = Path("src/files/PhosphoLingo/phosphoLingo").resolve()  # Update this path!
-sys.path.insert(0, str(phospholingo_dir))
-
-# 2. Import AFTER path adjustment
-import predict
-
-def add_at_after_st(seq: str, position: int) -> Optional[str]:
-    """
-    Add '@' after specified position if residue is S/T with proper error handling
+# def add_at_after_st(seq: str, position: int) -> Optional[str]:
+#     """
+#     Add '@' after specified position if residue is S/T with proper error handling
     
-    Args:
-        seq: Input protein sequence
-        position: 1-based position to modify
+#     Args:
+#         seq: Input protein sequence
+#         position: 1-based position to modify
         
-    Returns:
-        Modified sequence or None if invalid
-    """
-    try:
-        if position < 1 or position > len(seq):
-            raise ValueError(f"Position {position} out of range (1-{len(seq)})")
+#     Returns:
+#         Modified sequence or None if invalid
+#     """
+#     try:
+#         if position < 1 or position > len(seq):
+#             raise ValueError(f"Position {position} out of range (1-{len(seq)})")
             
-        residue = seq[position-1]
-        if residue not in ['s', 't']:
-            raise ValueError(f"Residue {residue} at position {position} is not S/T")
+#         residue = seq[position-1]
+#         if residue not in ['s', 't']:
+#             raise ValueError(f"Residue {residue} at position {position} is not S/T")
             
-        return seq[:position] + "@" + seq[position:]
+#         return seq[:position] + "@" + seq[position:]
         
-    except (IndexError, ValueError) as e:
-        error_msg = f"Position: {position}, Sequence: {seq[:30]}{'...' if len(seq)>30 else ''}, Error: {str(e)}"
-        with open("processing_errors.log", "a") as f:
-            f.write(error_msg + "\n")
-        return None
+#     except (IndexError, ValueError) as e:
+#         error_msg = f"Position: {position}, Sequence: {seq[:30]}{'...' if len(seq)>30 else ''}, Error: {str(e)}"
+#         with open("processing_errors.log", "a") as f:
+#             f.write(error_msg + "\n")
+#         return None
 
-def create_fasta_file(sequence_ids: List[str], modified_sequences: List[str], output_path: Path) -> None:
-    """
-    Create FASTA file from modified sequences
+# def create_fasta_file(sequence_ids: List[str], modified_sequences: List[str], output_path: Path) -> None:
+#     """
+#     Create FASTA file from modified sequences
     
-    Args:
-        sequence_ids: List of sequence identifiers
-        modified_sequences: List of modified sequences
-        output_path: Path to output FASTA file
-    """
-    with open(output_path, 'w') as fasta_file:
-        for seq_id, seq in zip(sequence_ids, modified_sequences):
-            if seq is not None:
-                fasta_file.write(f">{seq_id}\n{seq}\n")
+#     Args:
+#         sequence_ids: List of sequence identifiers
+#         modified_sequences: List of modified sequences
+#         output_path: Path to output FASTA file
+#     """
+#     with open(output_path, 'w') as fasta_file:
+#         for seq_id, seq in zip(sequence_ids, modified_sequences):
+#             if seq is not None:
+#                 fasta_file.write(f">{seq_id}\n{seq}\n")
 
-def predict_fasta_file(input_fasta: Path, output_csv: Path, model_loc: str) -> None:
-    """
-    Run PhosphoLingo prediction on a FASTA file
+# def predict_fasta_file(input_fasta: Path, output_csv: Path, model_loc: str) -> None:
+#     """
+#     Run PhosphoLingo prediction on a FASTA file
     
-    Args:
-        input_fasta: Path to input FASTA file
-        output_csv: Path to output predictions CSV
-        model_loc: Path to PhosphoLingo model
-    """
-    # Ensure output directory exists
-    output_csv.parent.mkdir(parents=True, exist_ok=True)
+#     Args:
+#         input_fasta: Path to input FASTA file
+#         output_csv: Path to output predictions CSV
+#         model_loc: Path to PhosphoLingo model
+#     """
+#     # Ensure output directory exists
+#     output_csv.parent.mkdir(parents=True, exist_ok=True)
     
-    # Run prediction
-    predict.run_predict(
-        str(Path(model_loc).resolve()),
-        str(input_fasta),
-        str(output_csv)
-    )
+#     # Run prediction
+#     predict.run_predict(
+#         str(Path(model_loc).resolve()),
+#         str(input_fasta),
+#         str(output_csv)
+#     )
 
-def extract_phospholingo_score(sequences, sites, model_loc, sequence_ids = ["default"]):
-    """
-    Batch process multiple sequences and extract phosphorylation scores
+# def extract_phospholingo_score(sequences, sites, model_loc, sequence_ids = ["default"]):
+#     """
+#     Batch process multiple sequences and extract phosphorylation scores
     
-    Args:
-        sequence_ids: List of unique sequence identifiers
-        sequences: List of protein sequences
-        sites: List of 1-based positions to predict
-        model_loc: Path to PhosphoLingo model
+#     Args:
+#         sequence_ids: List of unique sequence identifiers
+#         sequences: List of protein sequences
+#         sites: List of 1-based positions to predict
+#         model_loc: Path to PhosphoLingo model
         
-    Returns:
-        DataFrame with predictions and original data
-    """
-    # Validate input
-    if len(sequence_ids) != len(sequences) or len(sequences) != len(sites):
-        raise ValueError("All input lists must have the same length")
+#     Returns:
+#         DataFrame with predictions and original data
+#     """
+#     # Validate input
+#     if len(sequence_ids) != len(sequences) or len(sequences) != len(sites):
+#         raise ValueError("All input lists must have the same length")
         
-    # Generate modified sequences
-    modified_sequences = []
-    valid_entries = []
-    for seq_id, seq, site in zip(sequence_ids, sequences, sites):
-        modified = add_at_after_st(seq, site).upper()
-        print(modified)
-        if modified:
-            modified_sequences.append(modified)
-            valid_entries.append((seq_id, seq, site))
+#     # Generate modified sequences
+#     modified_sequences = []
+#     valid_entries = []
+#     for seq_id, seq, site in zip(sequence_ids, sequences, sites):
+#         modified = add_at_after_st(seq, site).upper()
+#         print(modified)
+#         if modified:
+#             modified_sequences.append(modified)
+#             valid_entries.append((seq_id, seq, site))
             
-    if not modified_sequences:
-        raise ValueError("No valid sequences to process")
+#     if not modified_sequences:
+#         raise ValueError("No valid sequences to process")
         
-    # Create temporary files
-    temp_id = uuid.uuid4().hex
-    temp_fasta = Path(f"temp_{temp_id}.fasta")
-    temp_output = Path(f"temp_{temp_id}_predictions.csv")
+#     # Create temporary files
+#     temp_id = uuid.uuid4().hex
+#     temp_fasta = Path(f"temp_{temp_id}.fasta")
+#     temp_output = Path(f"temp_{temp_id}_predictions.csv")
     
-    try:
-        # Create FASTA file
-        create_fasta_file(
-            [e[0] for e in valid_entries],
-            modified_sequences,
-            temp_fasta)
+#     try:
+#         # Create FASTA file
+#         create_fasta_file(
+#             [e[0] for e in valid_entries],
+#             modified_sequences,
+#             temp_fasta)
         
-        # Run predictions
-        predict_fasta_file(temp_fasta, temp_output, model_loc)
+#         # Run predictions
+#         predict_fasta_file(temp_fasta, temp_output, model_loc)
         
-        # Load and process results
-        results_df = pd.read_csv(temp_output)
+#         # Load and process results
+#         results_df = pd.read_csv(temp_output)
         
-        # Merge with original data
-        original_data = pd.DataFrame({
-            'unique_id': [e[0] for e in valid_entries],
-            'original_sequence': [e[1] for e in valid_entries],
-            'original_site': [e[2] for e in valid_entries]})
+#         # Merge with original data
+#         original_data = pd.DataFrame({
+#             'unique_id': [e[0] for e in valid_entries],
+#             'original_sequence': [e[1] for e in valid_entries],
+#             'original_site': [e[2] for e in valid_entries]})
         
-        merged = original_data.merge(
-            results_df,
-            left_on=['unique_id', 'original_site'],
-            right_on=['prot_id', 'position'],
-            how='left')
+#         merged = original_data.merge(
+#             results_df,
+#             left_on=['unique_id', 'original_site'],
+#             right_on=['prot_id', 'position'],
+#             how='left')
         
-        # Cleanup columns
-        result_cols = ['unique_id', 'pred']
-        return merged[result_cols].rename(columns={'pred': 'phospho_score'})
+#         # Cleanup columns
+#         result_cols = ['unique_id', 'pred']
+#         return merged[result_cols].rename(columns={'pred': 'phospho_score'})
         
-    finally:
-        # Cleanup temporary files
-        for f in [temp_fasta, temp_output]:
-            if f.exists():
-                f.unlink()
+#     finally:
+#         # Cleanup temporary files
+#         for f in [temp_fasta, temp_output]:
+#             if f.exists():
+#                 f.unlink()
 
+
+# # Adding PhosphoLingo to Python path
+# phospholingo_dir = Path("src/files/PhosphoLingo/phosphoLingo").resolve()
+# sys.path.insert(0, str(phospholingo_dir))
+
+# # Import predict after setting the sys.path
+# import predict
+
+# def add_at_after_st(seq: str, position: int) -> Optional[str]:
+#     try:
+#         if position < 1 or position > len(seq):
+#             raise ValueError(f"Position {position} out of range (1-{len(seq)})")
+
+#         residue = seq[position-1]
+#         if residue not in ['s', 't']:
+#             raise ValueError(f"Residue {residue} at position {position} is not S/T")
+
+#         return seq[:position] + "@" + seq[position:]
+
+#     except (IndexError, ValueError) as e:
+#         error_msg = f"Position: {position}, Sequence: {seq[:30]}{'...' if len(seq)>30 else ''}, Error: {str(e)}"
+#         with open("processing_errors.log", "a") as f:
+#             f.write(error_msg + "\n")
+#         return None
+
+# def create_fasta_file(sequence_ids: List[str], modified_sequences: List[str], output_path: Path) -> None:
+#     with open(output_path, 'w') as fasta_file:
+#         for seq_id, seq in zip(sequence_ids, modified_sequences):
+#             if seq is not None:
+#                 fasta_file.write(f">{seq_id}\n{seq}\n")
+
+# def predict_fasta_file(input_fasta: Path, output_csv: Path, model_loc: str) -> None:
+#     output_csv.parent.mkdir(parents=True, exist_ok=True)
+#     predict.run_predict(
+#         str(Path(model_loc).resolve()),
+#         str(input_fasta),
+#         str(output_csv)
+#     )
+
+# def extract_phospholingo_score(sequences, sites, model_loc, sequence_ids = ["default"]):
+#     if len(sequence_ids) != len(sequences) or len(sequences) != len(sites):
+#         raise ValueError("All input lists must have the same length")
+
+#     modified_sequences = []
+#     valid_entries = []
+#     for seq_id, seq, site in zip(sequence_ids, sequences, sites):
+#         modified = add_at_after_st(seq, site)
+#         if modified:
+#             modified_sequences.append(modified)
+#             valid_entries.append((seq_id, seq, site))
+
+#     if not modified_sequences:
+#         raise ValueError("No valid sequences to process")
+
+#     temp_id = uuid.uuid4().hex
+#     temp_fasta = Path(f"temp_{temp_id}.fasta")
+#     temp_output = Path(f"temp_{temp_id}_predictions.csv")
+
+#     try:
+#         create_fasta_file(
+#             [e[0] for e in valid_entries],
+#             modified_sequences,
+#             temp_fasta)
+
+#         predict_fasta_file(temp_fasta, temp_output, model_loc)
+
+#         results_df = pd.read_csv(temp_output)
+
+#         original_data = pd.DataFrame({
+#             'unique_id': [e[0] for e in valid_entries],
+#             'original_sequence': [e[1] for e in valid_entries],
+#             'original_site': [e[2] for e in valid_entries]})
+
+#         merged = original_data.merge(
+#             results_df,
+#             left_on=['unique_id', 'original_site'],
+#             right_on=['prot_id', 'position'],
+#             how='left')
+
+#         result_cols = ['unique_id', 'pred']
+#         return merged[result_cols].rename(columns={'pred': 'phospho_score'})
+
+#     finally:
+#         for f in [temp_fasta, temp_output]:
+#             if f.exists():
+#                 f.unlink()
 
 import pandas as pd
 import torch
@@ -564,6 +641,9 @@ def extract_ptmmamba_embedding(sequence, site):
 
     # Start the Docker container
     start_container = subprocess.run(["docker", "start", "plm_benji"], check=True)
+
+    clear_cuda_memory()
+
 
     # Execute the Python script inside the Docker container
     exec_script = subprocess.run(["docker", "exec", "plm_benji", "python", "infer_1433.py"], check=True)
@@ -951,6 +1031,8 @@ def build_bio_features_df(sequence, site):
     compactness_score_df = compactness_score_df.reset_index(drop=True)
     
     bio_features_df = pd.concat([deephase_score_df, idr_score_df, onehot_embedding_df, compactness_score_df], axis=1)
+
+    clear_cuda_memory()
     
     return bio_features_df
 
@@ -965,6 +1047,16 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model.to(device)
 
 import gc
+
+def clear_cuda_memory():
+    """Aggressive memory cleaning for CUDA"""
+    if torch.cuda.is_available():
+        print("torch.cuda.is_available")
+        torch.cuda.empty_cache()
+        torch.cuda.reset_peak_memory_stats()
+    else:
+        print("torch.cuda.not available")
+    gc.collect()
 
 def build_plm_features_df(sequence, site, tokenizer, model, phospholingo=True):
 
@@ -990,22 +1082,34 @@ def build_plm_features_df(sequence, site, tokenizer, model, phospholingo=True):
     site = int(site)
     print(site)
 
+    clear_cuda_memory()
+
     protein_embedding_df, site_embedding_df = extract_esm_embedding(seq, site, tokenizer, model)
     # print("protein_embedding_df, site_embedding_df:", protein_embedding_df, site_embedding_df)
 
+    clear_cuda_memory()
+
     phosphoprotein_embedding_df, phosphosite_embedding_df = extract_ptmmamba_embedding(wt_seq, site)
     # print("phosphoprotein_embedding_df, phosphosite_embedding_df:", phosphoprotein_embedding_df, phosphosite_embedding_df)
-    gc.collect()
+
+    clear_cuda_memory()
+
     if phospholingo:
-        phospholingo_score_df = extract_phospholingo_score([wt_seq], [site], model_loc)
-        # print("phospholingo_score_df:", phospholingo_score_df)    
+        from phospho import extract_phospholingo_score
+        model_loc = r"H:\PhosphoLingo_ST_new.ckpt"
+        print("start phospholingo")
+        print("filter_sequence: ", wt_seq)
+        print(site)
+        print(model_loc)
+        phospholingo_score_df = extract_phospholingo_score([wt_seq], [site], model_loc, ["test1"])
+        print("phospholingo_score_df:", phospholingo_score_df)
         # merge feature dfs
         plm_features_df = pd.concat([protein_embedding_df, site_embedding_df, phosphoprotein_embedding_df, phosphosite_embedding_df, phospholingo_score_df], axis=1)
     else:
         plm_features_df = pd.concat([protein_embedding_df, site_embedding_df, phosphoprotein_embedding_df, phosphosite_embedding_df], axis=1)
         
 
-    gc.collect() 
+    clear_cuda_memory()
     
     return plm_features_df
 
@@ -1019,6 +1123,9 @@ def extract_features(sequence, site):
         
     # Process the new data
     bio_features_df = build_bio_features_df(protein_sequences, site)
+
+    clear_cuda_memory()
+
     plm_features_df = build_plm_features_df(protein_sequences, site, tokenizer, model, phospholingo=True)
     # plm_features_df = build_plm_features_df(protein_sequences, site, tokenizer, model, phospholingo=False)
 
@@ -1055,3 +1162,13 @@ def extract_features(sequence, site):
     print(result_df)
 
     return result_df
+
+
+if __name__ == "__main__":
+    from phospho import extract_phospholingo_score
+    model_loc = r"H:\PhosphoLingo_ST_new.ckpt"
+    sequence_ids = ["test1"]
+    sequences = ["AsAAAARASKKKKKK"]
+    sites = [2]
+    scores = extract_phospholingo_score(sequences, sites, model_loc, sequence_ids)
+    print(scores)
