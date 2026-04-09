@@ -9,6 +9,9 @@
 /anaconda_projects/
 /.virtual_documents/
 /results/
+/assembly_clustered/
+/temp/
+/morf_predictions/
 
 # Virtualenv
 venv/
