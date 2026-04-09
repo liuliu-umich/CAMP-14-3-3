@@ -1,29 +1,56 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Results</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prediction Result</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Analysis Results</h1>
-    <div class="input-section">
-        <p><strong>Input Sequence:</strong> {{ sequence }}</p>
-        <p><strong>Site:</strong> {{ site }}</p>
-    </div>
-    
-    <h2>Extracted Features:</h2>
-    <ul>
-    {% for feature in features %}
-        <li>Feature {{ loop.index }}: {{ feature }}</li>
-    {% endfor %}
-    </ul>
-    
-    <h2>Prediction:</h2>
-    <div class="prediction-section">
-        <p>Class: {{ prediction }}</p>
-        <p>Probability: {{ (probability.max() * 100)|round(2) }}%</p>
-    </div>
-    
-    <a href="/" class="back-link">Analyze Another</a>
+    <main class="page-shell">
+        <section class="hero-card result-card">
+            <p class="eyebrow">Prediction complete</p>
+            <h1>{{ "Predicted 14-3-3 Binding Site" if predicted_positive else "Predicted Non-Binding Site" }}</h1>
+
+            <div class="score-panel {{ 'positive' if predicted_positive else 'negative' }}">
+                <div>
+                    <p class="score-label">Binding Probability</p>
+                    <p class="score-value">{{ (positive_probability * 100)|round(2) }}%</p>
+                </div>
+                <div class="score-divider"></div>
+                <div class="score-meta">
+                    <p><strong>Sequence length:</strong> {{ sequence|length }}</p>
+                    <p><strong>Site:</strong> {{ site }} ({{ residue }})</p>
+                    <p><strong>Features used:</strong> {{ feature_count }}</p>
+                </div>
+            </div>
+
+            <div class="details-grid">
+                <article class="detail-card">
+                    <h2>Model Call</h2>
+                    <p>{{ prediction }}</p>
+                </article>
+                <article class="detail-card">
+                    <h2>Binding Site</h2>
+                    <p>{{ "Yes" if predicted_positive else "No" }}</p>
+                </article>
+                <article class="detail-card">
+                    <h2>Positive Class</h2>
+                    <p>{{ (positive_probability * 100)|round(2) }}%</p>
+                </article>
+                <article class="detail-card">
+                    <h2>Negative Class</h2>
+                    <p>{{ (negative_probability * 100)|round(2) }}%</p>
+                </article>
+            </div>
+
+            <div class="sequence-box">
+                <h2>Submitted Sequence</h2>
+                <p>{{ sequence }}</p>
+            </div>
+
+            <a href="/" class="back-link">Run another prediction</a>
+        </section>
+    </main>
 </body>
 </html>

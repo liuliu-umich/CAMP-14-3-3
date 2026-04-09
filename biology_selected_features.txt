@@ -1,1 +1,0 @@
-onehot_1_P, onehot_-3_R, onehot_2_P, NCPR, fK, nuSVR, onehot_-2_R, phospho_score, SCD, iupred_score, faro, deephase_w2v_multi, onehot_-3_E, kappa, onehot_-2_S, onehot_-4_R

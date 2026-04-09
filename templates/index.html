@@ -1,20 +1,51 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Sequence Analyzer</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>14-3-3 Site Predictor</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Sequence and Site Analysis</h1>
-    <form action="/predict_score" method="POST">
-        <label for="sequence">Sequence:</label>
-        <textarea name="sequence" rows="4" cols="50" required></textarea>
-        
-        <label for="site">Site:</label>
-        <input type="text" name="site" required>
-        
-        <br>
-        <input type="submit" value="Analyze">
-    </form>
+    <main class="page-shell">
+        <section class="hero-card">
+            <h1>14-3-3 Binding Site Predictor</h1>
+            <p class="lead">
+                Enter a protein sequence and the 1-based candidate phosphosite position.
+                The app predicts whether the selected site is a 14-3-3 binding site
+                and returns the model probability for that prediction.
+            </p>
+
+            {% if error %}
+            <div class="alert">{{ error }}</div>
+            {% endif %}
+
+            <form action="/predict_score" method="POST" class="predict-form">
+                <label for="sequence">Protein Sequence</label>
+                <textarea id="sequence" name="sequence" rows="8" required placeholder="Paste the full protein sequence here">{{ sequence or '' }}</textarea>
+
+                <label for="site">Candidate Site Position</label>
+                <input id="site" type="number" min="1" name="site" value="{{ site or '' }}" placeholder="Example: 246">
+
+                <div class="action-row">
+                    <button type="submit">Predict One Site</button>
+                    <button type="submit" formaction="/predict_all_sites" class="secondary-button">Score All S/T Sites</button>
+                    <button type="submit" formaction="/predict_sequence_binding" class="secondary-button">Predict Sequence Binding</button>
+                </div>
+            </form>
+
+            <div class="note">
+                Use <code>Predict One Site</code> for a specific 1-based position, <code>Score All S/T Sites</code> to scan the full sequence, or <code>Predict Sequence Binding</code> to classify the whole protein using the highest-scoring S/T site.
+            </div>
+
+            <div class="sample-box">
+                <h2>Quick Test Example</h2>
+                <p>Use this example to confirm the website runs end-to-end.</p>
+                <p><strong>Site:</strong> <code>8</code></p>
+                <p><strong>Sequence:</strong></p>
+                <pre>ASAAAAAASAAAAAAT</pre>
+            </div>
+        </section>
+    </main>
 </body>
 </html>

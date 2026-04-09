@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Site Predictions</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <main class="page-shell">
+        <section class="hero-card result-card">
+            <p class="eyebrow">Batch prediction complete</p>
+            <h1>All S/T Site Predictions</h1>
+
+            <div class="score-panel {{ 'positive' if positive_count > 0 else 'negative' }}">
+                <div>
+                    <p class="score-label">Predicted Binding Sites</p>
+                    <p class="score-value">{{ positive_count }}</p>
+                </div>
+                <div class="score-divider"></div>
+                <div class="score-meta">
+                    <p><strong>Sequence length:</strong> {{ sequence_length }}</p>
+                    <p><strong>S/T sites scored:</strong> {{ site_count }}</p>
+                    <p><strong>Features used per site:</strong> {{ feature_count }}</p>
+                </div>
+            </div>
+
+            <div class="table-card">
+                <h2>Site Results</h2>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Site</th>
+                                <th>Residue</th>
+                                <th>Binding</th>
+                                <th>Positive Probability</th>
+                                <th>Negative Probability</th>
+                                <th>Model Call</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in rows %}
+                            <tr>
+                                <td>{{ row.site }}</td>
+                                <td>{{ row.residue }}</td>
+                                <td>{{ "Yes" if row.predicted_positive else "No" }}</td>
+                                <td>{{ (row.positive_probability * 100)|round(2) }}%</td>
+                                <td>{{ (row.negative_probability * 100)|round(2) }}%</td>
+                                <td>{{ row.prediction }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="sequence-box">
+                <h2>Submitted Sequence</h2>
+                <p>{{ sequence }}</p>
+            </div>
+
+            <a href="/" class="back-link">Run another prediction</a>
+        </section>
+    </main>
+</body>
+</html>

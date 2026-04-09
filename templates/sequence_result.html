@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sequence Binding Prediction</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <main class="page-shell">
+        <section class="hero-card result-card">
+            <p class="eyebrow">Sequence-level prediction</p>
+            <h1>{{ "Predicted 14-3-3 Binding Sequence" if predicted_positive else "Predicted Non-Binding Sequence" }}</h1>
+
+            <div class="score-panel {{ 'positive' if predicted_positive else 'negative' }}">
+                <div>
+                    <p class="score-label">Highest Site Probability</p>
+                    <p class="score-value">{{ (max_probability * 100)|round(2) }}%</p>
+                </div>
+                <div class="score-divider"></div>
+                <div class="score-meta">
+                    <p><strong>Threshold:</strong> {{ (threshold * 100)|round(2) }}%</p>
+                    <p><strong>Best site:</strong> {{ best_site }} ({{ best_residue }})</p>
+                    <p><strong>S/T sites scored:</strong> {{ site_count }}</p>
+                    <p><strong>Features used per site:</strong> {{ feature_count }}</p>
+                </div>
+            </div>
+
+            <div class="details-grid">
+                <article class="detail-card">
+                    <h2>Sequence Binding</h2>
+                    <p>{{ "Yes" if predicted_positive else "No" }}</p>
+                </article>
+                <article class="detail-card">
+                    <h2>Best Site</h2>
+                    <p>{{ best_site }} ({{ best_residue }})</p>
+                </article>
+                <article class="detail-card">
+                    <h2>Best Site Call</h2>
+                    <p>{{ best_site_prediction }}</p>
+                </article>
+                <article class="detail-card">
+                    <h2>Cutoff</h2>
+                    <p>{{ (threshold * 100)|round(2) }}%</p>
+                </article>
+            </div>
+
+            <div class="table-card">
+                <h2>All S/T Site Results</h2>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Site</th>
+                                <th>Residue</th>
+                                <th>Binding</th>
+                                <th>Positive Probability</th>
+                                <th>Negative Probability</th>
+                                <th>Model Call</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in rows %}
+                            <tr{% if row.site == best_site %} class="highlight-row"{% endif %}>
+                                <td>{{ row.site }}</td>
+                                <td>{{ row.residue }}</td>
+                                <td>{{ "Yes" if row.predicted_positive else "No" }}</td>
+                                <td>{{ (row.positive_probability * 100)|round(2) }}%</td>
+                                <td>{{ (row.negative_probability * 100)|round(2) }}%</td>
+                                <td>{{ row.prediction }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="sequence-box">
+                <h2>Submitted Sequence</h2>
+                <p>{{ sequence }}</p>
+            </div>
+
+            <a href="/" class="back-link">Run another prediction</a>
+        </section>
+    </main>
+</body>
+</html>

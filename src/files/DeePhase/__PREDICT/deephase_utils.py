@@ -5,6 +5,7 @@ import math
 import tempfile
 import subprocess
 import os
+import shutil
 
 SEED = 42
 np.random.seed(SEED)
@@ -66,8 +67,14 @@ def extract_LCR(seq):
     with open(tmp_filename, 'w') as f_LCR:
         f_LCR.write('>1\n' + str(seq))
 
+    segmasker_bin = shutil.which("segmasker")
+    if not segmasker_bin:
+        raise FileNotFoundError(
+            "segmasker was not found. Install NCBI BLAST+ and make sure segmasker is on PATH."
+        )
+
     # Run the subprocess using the temporary file
-    out = subprocess.Popen(['segmasker', '-in', tmp_filename], 
+    out = subprocess.Popen([segmasker_bin, '-in', tmp_filename], 
                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     stdout_LCR, stderr_LCR = out.communicate()
 
