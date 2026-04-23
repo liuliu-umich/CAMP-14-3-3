@@ -61,7 +61,7 @@ MPLCONFIG_DIR = BASE_DIR / "temp" / "mplconfig"
 XDG_CACHE_DIR = BASE_DIR / "temp" / "xdg-cache"
 PHOSPHOLINGO_MODEL_LOC = os.environ.get(
     "PHOSPHOLINGO_MODEL_LOC",
-    "/Users/newuser/PhosphoLingo_ST_new.ckpt",
+    "/home/luvul/PhosphoLingo_ST_new.ckpt",
 )
 SEQUENCE_BINDING_THRESHOLD = float(os.environ.get("SEQUENCE_BINDING_THRESHOLD", "0.5"))
 PHOSPHOLINGO_SITE_CHUNK_SIZE = int(os.environ.get("PHOSPHOLINGO_SITE_CHUNK_SIZE", "16"))
