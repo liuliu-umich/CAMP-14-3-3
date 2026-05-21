@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+message: "If you use this repository, please cite it using the metadata below."
+title: "14-3-3 Predictor"
+authors:
+  - family-names: "Liu"
+    given-names: "Liu"
+    affiliation: "Gilbert S. Omenn Department of Computational Medicine and Bioinformatics, Ann Arbor, MI 48109, USA; Department of Cardiac Surgery, Frankel Cardiovascular Center, The University of Michigan, Ann Arbor, MI 48109, USA"
+    email: "luvul@umich.edu"
+  - family-names: "Wang"
+    given-names: "Zhong"
+    affiliation: "Department of Cardiac Surgery, Frankel Cardiovascular Center, The University of Michigan, Ann Arbor, MI 48109, USA"
+  - family-names: "Huang"
+    given-names: "Xiaoqiang"
+    affiliation: "Center for Advanced Models for Translational Sciences and Therapeutics, Department of Internal Medicine, University of Michigan Medical School, 2800 Plymouth Road, Ann Arbor, MI 48109, USA"
+repository-code: "https://github.com/liuliu-umich/1433predictor.git"
+license: "MIT"

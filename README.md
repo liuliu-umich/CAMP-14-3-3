@@ -1,6 +1,19 @@
 # 14-3-3 Predictor
 
-This repository contains a machine learning pipeline and a lightweight Flask web app for predicting 14-3-3 binding at serine/threonine phosphosites from protein sequence.
+This repository contains the code, trained models, notebooks, and web application materials associated with the manuscript currently under review:
+
+`A Context-Aware 14-3-3 Binding Predictor Enabled by Data Augmentation, Multi-Scale Biological Features, and Protein Language Model Embeddings`
+
+It provides a machine learning pipeline and a lightweight Flask web app for predicting 14-3-3 binding at serine/threonine phosphosites from protein sequence.
+
+## Authors
+
+`Liu Liu1,2*`, `Zhong Wang2`, `Xiaoqiang Huang3`
+
+`1` Gilbert S. Omenn Department of Computational Medicine and Bioinformatics, Ann Arbor, MI 48109, USA  
+`2` Department of Cardiac Surgery, Frankel Cardiovascular Center, The University of Michigan, Ann Arbor, MI 48109, USA  
+`3` Center for Advanced Models for Translational Sciences and Therapeutics, Department of Internal Medicine, University of Michigan Medical School, 2800 Plymouth Road, Ann Arbor, MI 48109, USA  
+`*` Correspondence: `luvul@umich.edu` (LL)
 
 The current application supports three prediction modes:
 
@@ -19,16 +32,16 @@ The project combines several feature sources for each candidate site, including:
 - Compactness / charge pattern features
 - PhosphoLingo phosphorylation-related score
 
-These features are passed into a trained classification model stored in [`model/1433model_20260223.pkl`](/Users/newuser/1433predictor/model/1433model_20260223.pkl).
+These features are passed into a trained classification model stored in [`model/1433model_20260223.pkl`](model/1433model_20260223.pkl).
 
 ## Main Files
 
-- [`app.py`](/Users/newuser/1433predictor/app.py): Flask entry point for the web interface
-- [`features.py`](/Users/newuser/1433predictor/features.py): feature extraction, validation, and prediction logic
-- [`environment_torch.yml`](/Users/newuser/1433predictor/environment_torch.yml): Conda environment definition
-- [`model/`](/Users/newuser/1433predictor/model): trained models and auxiliary data
-- [`templates/`](/Users/newuser/1433predictor/templates): HTML pages for the web app
-- [`static/style.css`](/Users/newuser/1433predictor/static/style.css): web UI styling
+- [`app.py`](app.py): Flask entry point for the web interface
+- [`features.py`](features.py): feature extraction, validation, and prediction logic
+- [`environment_torch.yml`](environment_torch.yml): Conda environment definition
+- [`model/`](model): trained models and auxiliary data
+- [`templates/`](templates): HTML pages for the web app
+- [`static/style.css`](static/style.css): web UI styling
 - `*.ipynb`: notebooks for data analysis, feature engineering, training, threshold tuning, and demos
 
 ## Requirements
@@ -53,14 +66,43 @@ conda env create -f environment_torch.yml
 conda activate 1433predictor2026
 ```
 
+## Data and Model Availability
+
+The repository includes:
+
+- source code for feature extraction, model inference, and the Flask web interface
+- trained 14-3-3 predictor model files in [`model/`](model)
+- notebooks documenting data analysis, augmentation, feature engineering, training, and evaluation workflows
+- project data and intermediate resources stored under [`data/`](data) and [`datasets/`](datasets)
+
+The repository does not include:
+
+- the external checkpoint used with the bundled `PhosphoLingo`-derived inference code for phosphorylation-related feature generation
+- third-party model assets that may be downloaded separately at runtime, such as ESM weights from Hugging Face
+
+These resources are not bundled here because they are maintained externally and may be subject to size, distribution, or third-party licensing constraints.
+
+To run the full prediction pipeline, users should obtain the required checkpoint independently and point the code to its local path as described below.
+
+## Third-Party Software and Licensing
+
+This repository integrates or depends on several third-party resources for feature generation and model inference.
+
+- `PhosphoLingo`: this repository includes `PhosphoLingo`-related source code under [`src/files/PhosphoLingo/`](src/files/PhosphoLingo), with local modifications for integration into this workflow. At the time of preparation, the original `PhosphoLingo` repository did not provide a clearly identified open-source license in its repository metadata. Users should review the original project directly and verify the applicable reuse and redistribution terms before reusing these components.
+- `DeePhase`: this repository includes `DeePhase`-related files under [`src/files/DeePhase/`](src/files/DeePhase). The bundled `DeePhase` materials state that the work is for academic use only and is distributed under a `CC BY-NC 4.0` license. Reuse is therefore subject to attribution and non-commercial restrictions.
+- `IUPred2A`: this repository includes `IUPred2A`-related files under [`src/files/iupred2a/`](src/files/iupred2a). The bundled license states that `IUPred2A` is available free of charge only to academic users, may not be used for commercial purposes, and may not be redistributed to others. Users should consult the original `IUPred2A` academic license before any reuse or redistribution.
+- `IDRome (_2023_Tesei_IDRome)`: this project uses sequence-property calculations and/or pretrained SVR models derived from the `KULL-Centre/_2023_Tesei_IDRome` repository. This repository currently includes related model/data files such as [`model/svr_model_nu.joblib`](model/svr_model_nu.joblib), [`model/svr_model_SPR.joblib`](model/svr_model_SPR.joblib), and [`model/residues.csv`](model/residues.csv). The original repository is distributed under `GPL-3.0`. Any reuse or redistribution of code, models, or other derived components from that repository should follow the original `GPL-3.0` license terms.
+
+Users are responsible for ensuring that their use of these third-party resources complies with the respective original licenses, terms of use, and citation requirements.
+
 ## Important External Dependency
 
-The code expects a PhosphoLingo checkpoint file that is not stored in this repository.
+The code expects a compatible `PhosphoLingo` checkpoint file that is not stored in this repository.
 
-By default, [`features.py`](/Users/newuser/1433predictor/features.py) looks for:
+By default, [`features.py`](features.py) looks for:
 
 ```text
-/Users/newuser/PhosphoLingo_ST_new.ckpt
+/path/to/PhosphoLingo_ST_new.ckpt
 ```
 
 You can override this by setting an environment variable before starting the app:
@@ -168,6 +210,14 @@ The notebooks in this repository document the broader workflow, including:
 - site-level threshold optimization
 - sequence-level demo workflows
 
+## Reference
+
+If you use this repository, please cite:
+
+```text
+Liu L, Wang Z, Huang X. A Context-Aware 14-3-3 Binding Predictor Enabled by Data Augmentation, Multi-Scale Biological Features, and Protein Language Model Embeddings. Manuscript under review.
+```
+
 ## License
 
-No license file is currently included in this repository. Add one if you plan to distribute the project publicly.
+This repository is released under the `MIT License`. See the [`LICENSE`](LICENSE) file for details.
