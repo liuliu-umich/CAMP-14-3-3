@@ -12,6 +12,10 @@
 /assembly_clustered/
 /temp/
 /morf_predictions/
+/clinvar_full_sequence_output/
+/clinvar_full_sequence_output_smoketest/
+/clinvar_smoke_test_output/
+/clinvar_smoke_test_output_v2/
 
 # Virtualenv
 venv/
