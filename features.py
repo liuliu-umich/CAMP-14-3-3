@@ -9,6 +9,7 @@ import sys
 import uuid
 import warnings
 import __main__
+from functools import lru_cache
 from pathlib import Path
 from typing import List, Optional
 
@@ -66,6 +67,7 @@ PHOSPHOLINGO_MODEL_LOC = os.environ.get(
 SEQUENCE_BINDING_THRESHOLD = float(os.environ.get("SEQUENCE_BINDING_THRESHOLD", "0.5"))
 PHOSPHOLINGO_SITE_CHUNK_SIZE = int(os.environ.get("PHOSPHOLINGO_SITE_CHUNK_SIZE", "16"))
 ESM_MODEL_NAME = "facebook/esm2_t33_650M_UR50D"
+ESM_MAX_SEQUENCE_LENGTH = int(os.environ.get("ESM_MAX_SEQUENCE_LENGTH", "1022"))
 FEATURE_COLUMNS = [
     "esm_residue_embedding_491", "NCPR", "onehot_-3_V", "nuSVR",
     "esm_residue_embedding_715", "esm_residue_embedding_394", "phospho_score",
@@ -98,6 +100,16 @@ _ESM_MODEL = None
 _ESM_DEVICE = None
 _DEEPHASE_MODULE = None
 _PREDICT_MODEL = None
+_COMPACTNESS_MODELS = None
+
+AMINO_ACIDS = "ACDEFGHIKLMNPQRSTVWYst"
+AMINO_ACID_TO_INDEX = {aa: idx for idx, aa in enumerate(AMINO_ACIDS)}
+
+
+def set_phospholingo_model_loc(model_loc: str) -> None:
+    global PHOSPHOLINGO_MODEL_LOC
+    PHOSPHOLINGO_MODEL_LOC = str(Path(model_loc).expanduser())
+    os.environ["PHOSPHOLINGO_MODEL_LOC"] = PHOSPHOLINGO_MODEL_LOC
 
 
 def _get_esm_resources():
@@ -122,6 +134,17 @@ def _get_predict_model():
     if _PREDICT_MODEL is None:
         _PREDICT_MODEL = joblib.load(MODEL_DIR / "1433model_20260223.pkl")
     return _PREDICT_MODEL
+
+
+def _get_compactness_resources():
+    global _COMPACTNESS_MODELS
+    if _COMPACTNESS_MODELS is None:
+        _COMPACTNESS_MODELS = {
+            "model_nu": load(MODEL_DIR / "svr_model_nu.joblib"),
+            "model_spr": load(MODEL_DIR / "svr_model_SPR.joblib"),
+            "residues": pd.read_csv(MODEL_DIR / "residues.csv").set_index("one"),
+        }
+    return _COMPACTNESS_MODELS
 
 
 def split_ngrams(seq, n):
@@ -254,14 +277,12 @@ def calc_seq_prop(seq, residues, Nc, Cc, Hc):
 
 def extract_compactness_score(idr_seq):
     aa = ["A", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "P", "Q", "R", "S", "T", "V", "W", "Y"]
-
-    model_nu = load(MODEL_DIR / "svr_model_nu.joblib")
-    model_spr = load(MODEL_DIR / "svr_model_SPR.joblib")
+    compactness_resources = _get_compactness_resources()
+    model_nu = compactness_resources["model_nu"]
+    model_spr = compactness_resources["model_spr"]
     features_nu = ["SCD", "SHD", "kappa", "FCR", "mean_lambda"]
     features_spr = ["SCD", "SHD", "mean_lambda"]
-
-    residues = pd.read_csv(MODEL_DIR / "residues.csv")
-    residues = residues.set_index("one")
+    residues = compactness_resources["residues"].copy()
 
     df = pd.DataFrame(
         columns=[
@@ -323,6 +344,11 @@ def build_idr_dataframe(sequence):
     df["call_idr"] = df["iupred_score"].apply(lambda x: 1 if x > 0.5 else 0)
     df["segment_id"] = (df["call_idr"] != df["call_idr"].shift()).cumsum()
     return df
+
+
+@lru_cache(maxsize=128)
+def _build_idr_dataframe_cached(sequence):
+    return build_idr_dataframe(sequence)
 
 
 def extract_idr_anchor_score_from_df(df, site):
@@ -413,6 +439,28 @@ def extract_phospholingo_score(sequences, sites, model_loc, sequence_ids=None):
                 f.unlink()
 
 
+@lru_cache(maxsize=64)
+def _extract_phospholingo_scores_cached(sequence, sites_key):
+    sites = [int(site) for site in sites_key]
+    sequence_ids = [f"site_{site}" for site in sites]
+    site_specific_sequences = [make_site_specific_sequence(sequence, site) for site in sites]
+    phospholingo_score_df = extract_phospholingo_score(
+        site_specific_sequences,
+        sites,
+        PHOSPHOLINGO_MODEL_LOC,
+        sequence_ids,
+    )
+    phospholingo_score_df["site"] = (
+        phospholingo_score_df["unique_id"].astype(str).str.rsplit("_", n=1).str[-1].astype(int)
+    )
+    return tuple(
+        zip(
+            phospholingo_score_df["site"].tolist(),
+            phospholingo_score_df["phospho_score"].astype(float).tolist(),
+        )
+    )
+
+
 def extract_esm_embedding(seq, site, tokenizer, model):
     import torch
 
@@ -464,6 +512,13 @@ def extract_esm_embeddings_for_sequence(seq, tokenizer, model):
     return protein_embedding_df, residue_embeddings
 
 
+@lru_cache(maxsize=16)
+def _get_cached_esm_embeddings(seq):
+    tokenizer, model, _ = _get_esm_resources()
+    protein_embedding_df, residue_embeddings = extract_esm_embeddings_for_sequence(seq, tokenizer, model)
+    return protein_embedding_df, residue_embeddings
+
+
 def extract_site_embedding_from_array(residue_embeddings, site):
     site_embedding = residue_embeddings[site - 1]
     return pd.DataFrame(
@@ -473,19 +528,17 @@ def extract_site_embedding_from_array(residue_embeddings, site):
 
 
 def one_hot_encode(sequence):
-    amino_acids = "ACDEFGHIKLMNPQRSTVWYst"
-    one_hot = np.zeros((len(sequence), len(amino_acids)), dtype=int)
+    one_hot = np.zeros((len(sequence), len(AMINO_ACIDS)), dtype=int)
 
     for i, char in enumerate(sequence):
-        if char in amino_acids:
-            index = amino_acids.index(char)
+        index = AMINO_ACID_TO_INDEX.get(char)
+        if index is not None:
             one_hot[i, index] = 1
 
     return one_hot
 
 
 def extract_onehot_embedding(sequence, site):
-    amino_acids = "ACDEFGHIKLMNPQRSTVWYst"
     data = {}
     sub_sequence = ["-"] * 15
     site_index = site - 1
@@ -499,7 +552,7 @@ def extract_onehot_embedding(sequence, site):
 
     for pos_offset in range(-7, 8):
         position_in_onehot = pos_offset + 7
-        for aa_index, aa in enumerate(amino_acids):
+        for aa_index, aa in enumerate(AMINO_ACIDS):
             column_name = f"onehot_{pos_offset}_{aa}"
             data[column_name] = [one_hot[position_in_onehot, aa_index]]
 
@@ -596,6 +649,11 @@ def extract_seq_deephase_score(seq):
         columns=["deephase_phys_multi", "deephase_w2v_multi", "deephase_score"],
     )
     return df_deephase_score.astype(float)
+
+
+@lru_cache(maxsize=128)
+def _extract_seq_deephase_score_cached(seq):
+    return extract_seq_deephase_score(seq)
 
 
 def build_compactness_score_df(idr_seq, compactness_cache=None):
@@ -747,35 +805,17 @@ def extract_features_for_sites(sequence, sites):
         if residue not in {"S", "T"}:
             raise ValueError(f"Residue at site {site} must be S or T, found '{wt_seq[site - 1]}'.")
 
-    tokenizer, model, _ = _get_esm_resources()
-    deephase_score_df = extract_seq_deephase_score(seq).reset_index(drop=True)
-    idr_df = build_idr_dataframe(seq)
-    protein_embedding_df, residue_embeddings = extract_esm_embeddings_for_sequence(seq, tokenizer, model)
+    deephase_score_df = _extract_seq_deephase_score_cached(seq).copy().reset_index(drop=True)
+    idr_df = _build_idr_dataframe_cached(seq).copy()
+    protein_embedding_df, residue_embeddings = _get_cached_esm_embeddings(seq)
     compactness_cache = {}
 
     phospho_scores_by_site = {}
     if sites:
-        site_specific_sequences = [make_site_specific_sequence(wt_seq, site) for site in sites]
-        sequence_ids = [f"site_{site}" for site in sites]
-        chunked_rows = []
-        for sequence_chunk, site_chunk, id_chunk in zip(
-            chunk_list(site_specific_sequences, PHOSPHOLINGO_SITE_CHUNK_SIZE),
-            chunk_list(sites, PHOSPHOLINGO_SITE_CHUNK_SIZE),
-            chunk_list(sequence_ids, PHOSPHOLINGO_SITE_CHUNK_SIZE),
-        ):
-            phospholingo_score_df = extract_phospholingo_score(
-                sequence_chunk,
-                site_chunk,
-                PHOSPHOLINGO_MODEL_LOC,
-                id_chunk,
+        for site_chunk in chunk_list(sites, PHOSPHOLINGO_SITE_CHUNK_SIZE):
+            phospho_scores_by_site.update(
+                dict(_extract_phospholingo_scores_cached(wt_seq, tuple(site_chunk)))
             )
-            chunked_rows.append(phospholingo_score_df)
-
-        if chunked_rows:
-            phospholingo_score_df = pd.concat(chunked_rows, ignore_index=True)
-            for _, row in phospholingo_score_df.iterrows():
-                site_value = int(str(row["unique_id"]).split("_")[-1])
-                phospho_scores_by_site[site_value] = float(row["phospho_score"])
 
     feature_frames = []
     site_rows = []

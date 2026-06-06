@@ -6,6 +6,7 @@ import tempfile
 import subprocess
 import os
 import shutil
+from functools import lru_cache
 
 SEED = 42
 np.random.seed(SEED)
@@ -49,6 +50,7 @@ def Shannon_entropy(seq):
     return entropy
 
 
+@lru_cache(maxsize=256)
 def extract_LCR(seq):
     # tmp_LCR = tempfile.NamedTemporaryFile()  
     # with open(tmp_LCR.name, 'w') as f_LCR:
@@ -99,6 +101,7 @@ def extract_LCR(seq):
     return len(LCR_residues), LCR_sequence
 
 
+@lru_cache(maxsize=256)
 def extract_IDR(seq):
     # tmp_IDR = tempfile.NamedTemporaryFile()  
     # with open(tmp_IDR.name, 'w') as f_IDR:
@@ -172,6 +175,8 @@ Arom_AAs = ['W', 'Y', 'F']
 
 
 from gensim.models import word2vec
+
+MODEL_CACHE = {}
 
 def split_ngrams(seq, n):
     """
@@ -319,9 +324,11 @@ pv = load_protvec('src/files/DeePhase/__PREDICT/tools/Embeddings/swissprot_size2
 
 
 def create_features(df):
+    df = df.copy()
     df['Sequence_length'] = df['sequence_final'].str.len()
-    df['LCR_frac'] = [extract_LCR(seq)[0] for seq in df['sequence_final']] / df['Sequence_length']
-    df['LCR_sequence'] = [extract_LCR(seq)[1] for seq in df['sequence_final']]
+    lcr_results = [extract_LCR(seq) for seq in df['sequence_final']]
+    df['LCR_frac'] = [result[0] for result in lcr_results] / df['Sequence_length']
+    df['LCR_sequence'] = [result[1] for result in lcr_results]
     df['LCR_length'] = df['LCR_sequence'].str.len()
     df['Hydrophobicity'] = [hydrophobicity(seq) for seq in df['sequence_final']]
     df['Shannon_entropy'] = [Shannon_entropy(seq) for seq in df['sequence_final']]
@@ -403,10 +410,15 @@ def create_features(df):
 
     
 def predict_multiclass(model_name, df_predict_on):
-    model = pickle.load(open('src/files/DeePhase/__PREDICT/tools/Models/' + str(model_name) + '.sav', 'rb'))
+    if model_name not in MODEL_CACHE:
+        model_path = 'src/files/DeePhase/__PREDICT/tools/Models/' + str(model_name) + '.sav'
+        with open(model_path, 'rb') as model_file:
+            MODEL_CACHE[model_name] = pickle.load(model_file)
+    model = MODEL_CACHE[model_name]
     trial = df_predict_on.drop(['sequence_final'], axis=1).to_numpy()
     df_predictions =  df_predict_on.copy()
-    df_predictions['prediction'] = model.predict_proba(trial)[:,0] + 0.5* model.predict_proba(trial)[:,1]
+    predicted_proba = model.predict_proba(trial)
+    df_predictions['prediction'] = predicted_proba[:,0] + 0.5 * predicted_proba[:,1]
     df_predictions = df_predictions.rename(columns={"prediction": "prediction_" + str(model_name)})
     
     return df_predictions
