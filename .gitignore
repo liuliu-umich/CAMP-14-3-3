@@ -9,6 +9,13 @@
 /anaconda_projects/
 /.virtual_documents/
 /results/
+/revision/results/
+/revision/selection_cache/
+/revision/.venv/
+/revision/
+/benchmarks/assets/
+/benchmarks/.matplotlib/
+/benchmarks/.venv/
 /assembly_clustered/
 /temp/
 /morf_predictions/
@@ -64,3 +71,4 @@ Thumbs.db
 .svn/
 .hg/
 .bzr/
+/benchmarks/changes.csv

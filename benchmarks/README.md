@@ -1,0 +1,89 @@
+# Independent benchmarks
+
+The notebooks reproduce the completed revision analyses with the released CAMP checkpoint. The site benchmark uses identical candidates for all four tools.
+
+| Notebook | Contents | Manuscript placement |
+|---|---|---|
+| [13.Independent benchmark.ipynb](../13.Independent%20benchmark.ipynb) | Metrics, confusion counts, ROC/PR, calibration, prevalence sensitivity | Table 4, Figure 5, Figure 6A–B |
+| [14.Proteome recovery.ipynb](../14.Proteome%20recovery.ipynb) | Known-client ranking and recovery | Figure 6C–D |
+
+Figure numbers are proposed revision placements.
+
+## Reproduce tables and figures
+
+Python 3.9 is supported. Use a separate analysis environment:
+
+```bash
+python3.9 -m venv benchmarks/.venv
+source benchmarks/.venv/bin/activate
+pip install -r benchmarks/requirements.txt
+python benchmarks/check.py
+python benchmarks/evaluate.py
+```
+
+Alternatively, run the two notebooks from the repository root. They contain the same analysis steps and save CSV tables in `benchmarks/results/` and SVG/PNG/PDF figures in `benchmarks/figures/`. SVG exports retain editable text and vector plot elements, including the confusion-matrix cells. The supplied scores allow this step to run offline without model downloads or GPUs.
+
+## Data
+
+- `data/sites.csv`: 529 public independent-test records with full sequences, 15-mers, labels, source categories and overlap flags. `in_test77=1` identifies the 77-site primary comparison: 66 positive and 11 negative sites from 54 proteins.
+- `data/provenance.csv` and `reference_curation.csv`: recorded source joins and literature identifiers. The 77 sites have no recorded exact CAMP protein, BindSite development-peptide or Site-Finder training-protein overlap. Approximate local sequence similarity and the original 2015 training overlap have not been exhaustively audited.
+- `data/predictions.csv`: frozen per-site scores. The 529-site comparison includes homology-derived positives and sampled-background negatives; report it separately from the 77 reference-matched sites. It is a different public data version from the historical 527-site Table 4.
+- `data/camp_features.csv`, `sitefinder_features.csv`, `server_scores.csv`: cached inference inputs, including checked original server peptide windows.
+- `data/proteins.csv`: paired maximum S/T-site scores for the same 19,218 sequence-matched proteins. These are sufficient to recompute ranking and recovery without repeating proteome inference. Sequence hashes, eligibility exclusions and 53 original positive accessions are retained; 50 accessions map to this comparison.
+- `data/label_contexts.csv`: the three retained neighboring D/E mutant contexts and primary evidence. Labels are unchanged.
+- `data/historical_metrics.csv`: original notebook outputs, with zero-based cell indices 103 and 129. Table 2 accuracy is 0.86 in the saved output; 0.93 in the manuscript is a transcription error. These are historical single-holdout results, not new five-fold estimates.
+
+Rebuild the site inputs from the public source CSV using the recorded provenance:
+
+```bash
+python benchmarks/prepare_inputs.py
+```
+
+The source is [`datasets/final_dataset_with_seq.csv`](../datasets/final_dataset_with_seq.csv), Git blob `e12d4c7d658f4d096b16eb5c5afb2418fd4638bd`. The reference curation corresponds to `datasets/Table 1.csv`, blob `892aecee7fbcaeaa4e936669e7e8e50700fb30e2`. `data/checksums.csv` records the packaged input hashes.
+
+## Rerun baseline inference
+
+| Tool | Training used here | Input | Output |
+|---|---|---|---|
+| CAMP | Released `model/1433model_20260223.pkl` | 44 cached features, or sequence plus candidate site | `score_camp` |
+| BindSite | Authors' released MLP/CNN/GRU weights; no retraining | 15-mer, lowercase central s/t | Mean of three scores |
+| Site-Finder | Authors' 25,697 S/T training rows only; seed 20261025, 500 trees, mtry=2 | Residue, IUPred2A, ANN/PSSM/SVM and PTM normalization | Full-forest vote fraction |
+| 14-3-3-Pred | Original server, no local retraining | Checked original 11-residue server windows | Raw consensus score |
+
+Use separate environments for the legacy CAMP pickle and BindSite/Keras dependencies, with `baselines/requirements-camp.txt` and `baselines/requirements-bindsite.txt`. CAMP feature recomputation uses the existing repository environment and external PhosphoLingo checkpoint described in the main README.
+
+```bash
+python benchmarks/baselines/camp.py
+# Add --recompute-features to run the original features.py instead of the cache.
+
+python benchmarks/baselines/download_assets.py bindsite
+python benchmarks/baselines/bindsite.py
+
+python benchmarks/baselines/download_assets.py sitefinder
+# R 4.4.3 and randomForest 4.7-1.2 were used for the recorded run.
+Rscript benchmarks/baselines/sitefinder.R train benchmarks/assets/sitefinder/withID.csv benchmarks/assets/sitefinder/model.rds
+python benchmarks/baselines/prepare_sitefinder.py --cached-disorder benchmarks/data/sitefinder_features.csv
+Rscript benchmarks/baselines/sitefinder.R score benchmarks/assets/sitefinder/model.rds benchmarks/results/sitefinder_features.csv benchmarks/results/sitefinder_predictions.csv
+
+python benchmarks/baselines/pred1433.py
+python benchmarks/collect_predictions.py
+python benchmarks/evaluate.py --predictions benchmarks/results/rerun_predictions.csv
+```
+
+`download_assets.py` verifies pinned Git blobs and SHA256 hashes in `data/assets.csv`; downloaded assets stay outside version control. Site-Finder formulas and BindSite encoding functions follow the authors' code. The BindSite loader checks ten published Table 3 examples before prediction. For Site-Finder, `baselines/prepare_sitefinder.py` can recalculate disorder and join the cached server scores to the authors' normalization database; absent PTM observations map to zero, while missing server predictions raise an error.
+
+Both notebooks have been executed. The packaged inference scripts reproduce all recorded 77/529 metrics and confusion counts; `results/inference_verification.csv` records the numerical comparison. The rebuilt Site-Finder input features also match the frozen inputs.
+
+Sources: [BindSite](https://github.com/molML/14-3-3-bindsite/tree/1ad18fd56dcfdfdba4f1143f305aafa2c5c5e136), [Site-Finder](https://github.com/lynsiewarr/14-3-3-Site-Finder/tree/fbcb9fc20a10ca2d2e6224214ccfae3fd3205158), [14-3-3-Pred](https://www.compbio.dundee.ac.uk/1433pred/about). Review the original projects' terms before obtaining their assets.
+
+## Evaluation conventions
+
+AUROC and AP use original continuous scores. Classification metrics use the previously fixed `score > 0.5` rule; this common threshold is exploratory for ranking tools and was not optimized on the test set. Unprefixed precision/recall/F1 describe the positive class; `macro_*` averages both classes equally. Every report includes TP/TN/FP/FN.
+
+Calibration uses CAMP scores in five fixed bins on the 77 sites, with no probability refitting. Precision/FDR at 0.1%, 0.5%, 1% and 5% prevalence assumes the measured class-conditional rates transfer to those hypothetical populations. Intervals resample whole proteins 5,000 times (seed 20261026); they are not measured proteome precision or FDR.
+
+Protein ranking uses the maximum site score. Cutoff ties are averaged; 2,000 random reference sets match protein length and S/T count (seed 20261026). Unknown proteins remain unlabeled. The 18/50 CAMP and 11/50 BindSite recoveries at top 1,000 are recovery counts, not precision estimates. Full proteome Site-Finder/2015 server inference is not required by these notebooks.
+
+## Scope
+
+This supplement provides direct published-tool comparisons, test-cohort provenance, calibration, hypothetical precision/FDR and known-client recovery. The original training notebooks and checkpoint are preserved. Fold-local retraining, augmentation ablations and new biological experiments are outside this supplement. Manuscript drafts and reviewer-response documents are maintained separately.

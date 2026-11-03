@@ -44,6 +44,12 @@ These features are passed into a trained classification model stored in [`model/
 - [`static/style.css`](static/style.css): web UI styling
 - `*.ipynb`: notebooks for data analysis, feature engineering, training, threshold tuning, and demos
 
+## Independent Benchmarks
+
+[13.Independent benchmark.ipynb](13.Independent%20benchmark.ipynb) reproduces the four-tool 77/529-site comparison, ROC/PR curves, calibration and prevalence sensitivity. [14.Proteome recovery.ipynb](14.Proteome%20recovery.ipynb) reproduces the paired CAMP/BindSite known-client recovery analysis.
+
+Scripts, frozen inputs, result tables and figures are in [`benchmarks/`](benchmarks/README.md). The released CAMP checkpoint is used without retraining.
+
 ## Requirements
 
 This project is set up around:

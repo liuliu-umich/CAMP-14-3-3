@@ -1,0 +1,4 @@
+source_table_line,accession,gene,target_site,annotation,mutation,mutation_position,offset_from_target,mutation_is_at_candidate_site,label,PMIDs,final_csv_rows,final_csv_usage,final_mutated_sequence_verified,wildtype_positive_final_csv_rows,primary_finding,figure,primary_source,number_mapping_pending
+893,Q12778,FOXO1,24,T24t/S22E,S22E,22,-2,False,0,31308176,1405,training,True,954,S22E reduces 14-3-3 association; T24 phosphorylation becomes undetectable in the tested cellular mutant.,Figure 4A,https://pmc.ncbi.nlm.nih.gov/articles/PMC6721940/,False
+896,O15151,MDM4/HDMX,367,S367s/T365D,T365D,365,-2,False,0,16943424,1088,training,True,1028,T365D eliminates detectable 14-3-3 co-immunoprecipitation.,Figure 3B,https://pmc.ncbi.nlm.nih.gov/articles/PMC1592859/,False
+904,P46937,YAP1,127,S127s/S128D,S128D,128,1,False,0,27979971,1420,training,True,1017,S128D abolishes association at the S127-containing region.,Figure 4E,https://pmc.ncbi.nlm.nih.gov/articles/PMC5210094/,False
