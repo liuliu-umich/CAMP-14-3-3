@@ -1,0 +1,3 @@
+source_cell,scope,n,positive,negative,accuracy_reported,MCC_reported,AP_reported,precision_macro_reported,recall_macro_reported,F1_macro_reported,precision_positive_reported,recall_positive_reported,F1_positive_reported,status
+103,development_validation,459,226,233,0.86,0.713,0.9327,0.86,0.86,0.86,0.87,0.83,0.85,Historical rounded saved notebook output; original data version.
+129,original_independent_test,527,263,264,0.84,0.71,,0.86,0.84,0.84,0.95,0.73,0.82,Historical rounded saved notebook output; original data version.
