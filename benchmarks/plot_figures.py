@@ -16,14 +16,13 @@ except ImportError:
 
 plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": 10,
                      "axes.spines.top": False, "axes.spines.right": False,
-                     "pdf.fonttype": 42, "svg.fonttype": "none"})
+                     "svg.fonttype": "none"})
 
 
 def save_figure(fig, name, output=BASE / "figures"):
     output = Path(output)
     output.mkdir(parents=True, exist_ok=True)
-    for suffix in ["png", "pdf", "svg"]:
-        fig.savefig(output / f"{name}.{suffix}", dpi=200, bbox_inches="tight")
+    fig.savefig(output / f"{name}.svg", bbox_inches="tight")
     return fig
 
 

@@ -30,10 +30,8 @@ def main():
     bins, diagnostic = calibration(sites)
     estimates, rates, adjusted = prevalence_analysis(sites)
     recovery, curves, ranks = proteome_recovery(pd.read_csv(data / "proteins.csv"))
-    save_tables(args.output, model_metrics=metrics, roc_points=roc, pr_points=pr,
-                calibration_bins=bins, calibration_summary=diagnostic,
-                precision_fdr=estimates, conditional_rates=rates, adjusted_pr=adjusted,
-                recovery_at_K=recovery, recovery_curve=curves, protein_rankings=ranks)
+    save_tables(args.output, model_metrics=metrics, calibration_summary=diagnostic,
+                precision_fdr=estimates, recovery_at_K=recovery)
     for cohort in ["test77", "full_test529"]:
         plt.close(plot_benchmark(metrics, roc, pr, cohort=cohort, output=args.figures))
     plt.close(plot_calibration(bins, diagnostic, args.figures))

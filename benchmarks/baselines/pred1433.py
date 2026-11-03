@@ -1,4 +1,7 @@
-"""Validate and read cached original 14-3-3-Pred server scores."""
+"""Validate cached original-server scores; no local model implementation.
+
+Source: https://www.compbio.dundee.ac.uk/1433pred/
+"""
 
 import argparse
 from pathlib import Path

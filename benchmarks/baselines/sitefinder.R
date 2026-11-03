@@ -1,5 +1,6 @@
 #!/usr/bin/env Rscript
-# Train the authors' forests or score the supplied feature table.
+# Full-forest formula from the authors' app/app.R; batch I/O added here.
+# Source: https://github.com/lynsiewarr/14-3-3-Site-Finder
 args <- commandArgs(trailingOnly=TRUE)
 if (length(args) < 3) stop('Usage: sitefinder.R train TRAIN_CSV MODEL_RDS | score MODEL_RDS FEATURES_CSV OUTPUT_CSV')
 suppressPackageStartupMessages(library(randomForest))
@@ -15,12 +16,8 @@ if (args[1] == 'train') {
   set.seed(seed)
   full <- randomForest(Response~Amino.Acid+Iupred.score+ANN+PSSM+SVM+normalization,
                        data=dat,mtry=2,ntree=500,importance=TRUE,na.action=na.roughfix)
-  red <- randomForest(Response~Amino.Acid+Iupred.score+normalization,
-                      data=dat,mtry=2,ntree=500,importance=TRUE,na.action=na.roughfix)
-  con <- randomForest(Response~ANN+PSSM+SVM,data=dat,mtry=2,ntree=500,
-                      importance=TRUE,na.action=na.roughfix)
   dir.create(dirname(args[3]), recursive=TRUE, showWarnings=FALSE)
-  saveRDS(list(full=full,red=red,con=con,seed=seed,
+  saveRDS(list(full=full,seed=seed,
                amino_levels=levels(dat$Amino.Acid)),args[3])
   capture.output(sessionInfo(),file=paste0(args[3],'.session.txt'))
   cat('Training rows:',nrow(dat),'positive:',sum(dat$Response=='1'),'negative:',sum(dat$Response=='0'),'\n')

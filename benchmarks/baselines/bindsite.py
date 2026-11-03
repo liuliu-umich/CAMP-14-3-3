@@ -1,4 +1,7 @@
-"""Score 15-residue windows with the three published BindSite models."""
+"""Batch I/O for the authors' unchanged BindSite encoders and released models.
+
+Source: https://github.com/molML/14-3-3-bindsite
+"""
 
 import argparse
 import ast
